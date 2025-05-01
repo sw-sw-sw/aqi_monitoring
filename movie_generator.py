@@ -81,7 +81,9 @@ def generate_movie(input_dir, output_dir, output_file_name, time_stamp=True):
     current_date = current_datetime.strftime("%Y-%m-%d")
     
     # 出力ファイル名の設定（日付を追加）
-    output_filename = f"timelapse_{output_file_name}_{current_date}.mp4"
+    # output_filename = f"timelapse_{output_file_name}_{current_date}.mp4"
+    output_filename = f"timelapse_{output_file_name}.mp4"
+
     output_path = os.path.join(output_dir, output_filename)
     
     # 動画ライターの設定

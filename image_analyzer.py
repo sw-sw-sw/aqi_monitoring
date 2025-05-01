@@ -22,7 +22,7 @@ def encode_image(image_data):
     """画像データをbase64エンコードする"""
     return base64.b64encode(image_data).decode('utf-8')
 
-def resize_image(image_path, size=(300, 300)):
+def resize_image(image_path, size=(320, 180)):
     """画像を指定したサイズにリサイズする"""
     try:
         # 画像を開く
@@ -31,7 +31,7 @@ def resize_image(image_path, size=(300, 300)):
         # 画像をリサイズ（アスペクト比を維持しつつ、指定サイズに収まるようにする）
         img.thumbnail(size, Image.LANCZOS)
         
-        # 新しい300x300の白い背景画像を作成
+        # 新しい320x180の白い背景画像を作成
         new_img = Image.new("RGB", size, (255, 255, 255))
         
         # リサイズした画像を中央に配置
@@ -203,11 +203,6 @@ def main(input_dir, output_dir):
             total_cost["output"] += result["cost"]["output"]
             total_cost["total"] += result["cost"]["total"]
         
-        # 各画像のコスト情報を表示
-        # if "cost" in result:
-        #     print(f"  トークン: 入力={result['tokens']['input']}, 出力={result['tokens']['output']}, 合計={result['tokens']['total']}")
-        #     print(f"  コスト: ${result['cost']['total']:.6f} USD")
-            
     
     # 合計コスト情報を結果に追加
     summary = {

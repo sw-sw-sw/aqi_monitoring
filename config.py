@@ -18,6 +18,7 @@ os.makedirs(STATIC_DIR, exist_ok=True)
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(IMAGE_ANALYSIS_DIR, exist_ok=True)
 os.makedirs(IMAGE_CRAWLER_DIR, exist_ok=True)
+
 # ファイルパス
 AQI_URL = "https://aqicn.org/city/japan/kobeshisumaku/suma/jp/"
 CSV_FILE_PATH = os.path.join(DATA_DIR, "kobe_aqi_data.csv")
