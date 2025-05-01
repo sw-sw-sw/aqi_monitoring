@@ -1,24 +1,12 @@
-#!/usr/bin/env python3
-"""
-AQIデータを定期的に取得するためのスケジューラスクリプト
-crontabで定期実行する場合に使用します
-
-使用例（1時間ごとに実行）:
-* * * * * cd /path/to/aqi_monitoring && /path/to/python scheduler.py >> cron.log 2>&1
-"""
 
 import sys
 import os
 import traceback
 from datetime import datetime
 from graph_generator import generate_graph
-from bak.analyzer import analyzer
 from config import *
 from aqi_scraper import fetch_aqi_data
 from data_handler import save_to_csv
-# ディレクトリパスを取得して、プロジェクトのルートディレクトリをPythonパスに追加
-script_dir = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, script_dir)
 
 def main():
     """
