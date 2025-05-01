@@ -10,6 +10,7 @@ IMAGE_CRAWLER_DIR = os.path.join(DATA_DIR, "image_crawler_data")
 MOVIE_DIR = os.path.join(DATA_DIR, "movies")
 STATIC_DIR = os.path.join(PROJECT_ROOT, "static")
 LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
+IMAGE_WEB_URL_DIR = os.path.join(DATA_DIR, "image_web_urls")
 
 # ディレクトリの作成
 os.makedirs(DATA_DIR, exist_ok=True)

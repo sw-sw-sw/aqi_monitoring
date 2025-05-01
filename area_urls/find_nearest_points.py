@@ -1,7 +1,7 @@
 import csv
 from geopy.distance import geodesic
-import time
-from _geocoding_module import geocode_address
+from config import *
+from google_geocording_module import geocode
 from get_area_urls import get_area_links, get_pref_links, get_camera_links
 
 
@@ -30,16 +30,17 @@ def find_nearest_points(user_address, input_file, top_n=5, verbose=True):
     if verbose:
         print(f"ユーザーの住所を処理中: {user_address}")
     
-    user_lat, user_lon, matched_address = geocode_address(user_address, verbose=verbose)
+    coordinates = geocode(user_address)
     
-    if not user_lat or not user_lon:
+    if not coordinates:
         if verbose:
             print("ユーザーの住所を取得できませんでした。")
         return []
 
+    user_lat, user_lon = coordinates
     user_coords = (user_lat, user_lon)
     if verbose:
-        print(f"ユーザーの位置: {user_coords} (マッチした住所: {matched_address})")
+        print(f"ユーザーの位置: {user_coords}")
     
     points = []
 
@@ -111,9 +112,9 @@ def export_nearest_points(user_address, input_file, output_file, top_n=10):
 
 
 if __name__ == "__main__":
-    USER_ADDRESS = "愛知県名古屋市中区新栄1丁目"  # ユーザーの住所を指定
-    INPUT_CSV = "livecam_links_with_lat_lon.csv"
-    OUTPUT_CSV = "nearest_points.csv"
+    USER_ADDRESS = "神戸市須磨区潮見台町1-3-7"  # ユーザーの住所を指定
+    INPUT_CSV = os.path.join(IMAGE_WEB_URL_DIR, "livecam_links_with_lat_lon.csv")
+    OUTPUT_CSV = os.path.join(IMAGE_WEB_URL_DIR, "nearest_points.csv")
     
     # 最寄りのポイントを検索
     find_nearest_points(USER_ADDRESS, INPUT_CSV)

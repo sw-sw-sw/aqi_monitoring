@@ -1,6 +1,3 @@
-import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import os
 from datetime import datetime, timedelta
 from config import *
