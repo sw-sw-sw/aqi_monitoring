@@ -9,6 +9,7 @@ from config import *
 import logging
 from dotenv import load_dotenv
 
+
 load_dotenv()
 api_key = os.getenv('CLAUDE_API')
 

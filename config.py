@@ -48,3 +48,11 @@ def setup_logging():
 
 # グローバルロガーの初期化
 logger = setup_logging()
+
+
+MODEL_PRICING = {
+    "claude-3-opus-20240229": {"input": 15.0, "output": 75.0},  # $15/1M入力トークン, $75/1M出力トークン
+    "claude-3-sonnet-20240229": {"input": 3.0, "output": 15.0},  # $3/1M入力トークン, $15/1M出力トークン
+    "claude-3-haiku-20240307": {"input": 0.25, "output": 1.25},  # $0.25/1M入力トークン, $1.25/1M出力トークン
+    "claude-3-5-sonnet-20240620": {"input": 3.0, "output": 15.0}  # $3/1M入力トークン, $15/1M出力トークン
+}
