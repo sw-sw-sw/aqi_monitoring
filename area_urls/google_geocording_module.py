@@ -38,7 +38,7 @@ def geocode(address):
 if __name__ == "__main__":
 
     # テスト住所
-    test_address = '東京都渋谷区渋谷2-21-1'
+    test_address = 'すすきの kanto chiba'
     
     # ジオコーディング実行
     coordinates = geocode(test_address)

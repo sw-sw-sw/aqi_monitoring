@@ -1,8 +1,7 @@
-
-
 import csv, os
 from config import *
-from area_urls.geocoding_module import geocode_address
+# geocoding_module からの import を google_geocording_module からの import に変更
+from area_urls.google_geocording_module import geocode
 
 def add_lat_lon_to_csv(input_file, output_file, failed_output_file=None, verbose=True):
     """
@@ -69,13 +68,15 @@ def add_lat_lon_to_csv(input_file, output_file, failed_output_file=None, verbose
                 if verbose:
                     print(f"住所の処理: {row['area']} (行 {index})")
                 
-                # ジオコーディングモジュールを使用
-                latitude, longitude, matched_address = geocode_address(row["area"], verbose=verbose)
+                # Google Geocodingモジュールを使用して住所を処理
+                result = geocode(row["area"])
                 
-                if latitude and longitude:
+                if result:
+                    latitude, longitude = result
                     row["latitude"] = latitude
                     row["longitude"] = longitude
-                    row["matched_address"] = matched_address
+                    # Google Geocodingモジュールでは matched_address は提供されないため空欄に
+                    row["matched_address"] = ""
                 else:
                     row["latitude"] = ""
                     row["longitude"] = ""
@@ -155,16 +156,22 @@ def retry_lat_lon_for_missing_data(output_file, failed_output_file=None, verbose
             print(f"地理情報の再取得 ({i}/{len(missing_data)}): {row['area']}")
         
         try:
-            # ジオコーディングモジュールを使用
-            latitude, longitude, matched_address = geocode_address(row["area"], verbose=verbose)
+            # Google Geocodingモジュールを使用
+            region = row.get('region', '')
+            division = row.get('division', '')
+            area = row.get('area', '')
+            combined_address = f"{region} {division} {area}".strip()
+            result = geocode(combined_address)  # Use combined_address instead of row["area"]
             
-            if latitude and longitude:
+            if result:
+                latitude, longitude = result
                 # 元のリストの該当行を更新
                 for original_row in rows:
                     if original_row["area"] == row["area"]:
                         original_row["latitude"] = latitude
                         original_row["longitude"] = longitude
-                        original_row["matched_address"] = matched_address
+                        # Google Geocodingモジュールでは matched_address は提供されないため空欄に
+                        original_row["matched_address"] = ""
                         break
             else:
                 if verbose:
