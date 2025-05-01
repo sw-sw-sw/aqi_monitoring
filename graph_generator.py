@@ -1,7 +1,3 @@
-import os, sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-
 import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -300,5 +296,5 @@ def generate_graph(output_path):
         return False
 
 if __name__ == "__main__":
-    output_path = os.path.join(DATA_DIR, 'aqi_visualization.png')
+    output_path = os.path.join(DATA_DIR, 'aqi_graph_test.png')
     generate_graph(output_path)

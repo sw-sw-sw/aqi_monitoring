@@ -1,10 +1,6 @@
 import os
-import sys
 import cv2
 import glob
-import re
-from datetime import datetime
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from config import *
 
 FPS = 30

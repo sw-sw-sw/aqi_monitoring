@@ -4,12 +4,13 @@ import time
 import requests
 from datetime import datetime
 from config import logger, DATA_DIR
-from api_key.api_token import *
+from dotenv import load_dotenv
+load_dotenv()
 
 # WAQI API エンドポイントとトークン
 # 注意: 実際のAPIキーに置き換える必要があります
 API_BASE_URL = "https://api.waqi.info"
-API_TOKEN = API_TOKEN  # api_token.pyからインポート
+API_TOKEN = os.getenv('AQI_API_TOKEN')  # api_token.pyからインポート
 
 def fetch_aqi_data():
     """神戸市須磨区の大気質データをAPIから取得する関数"""
