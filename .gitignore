@@ -1,0 +1,14 @@
+data/
+logs/
+bak/
+static/
+setup/
+utilities/
+key/
+*.pyc
+*.pyo
+*.pyd
+.env
+__pycache__/
+
+api_token.py
