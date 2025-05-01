@@ -117,7 +117,7 @@ def save_to_csv(data, filename="livecam_links.csv"):
 
 if __name__ == "__main__":
     print("全国のライブカメラリンクを収集中...")
-    SAVE_DIR = os.path.join(DATA_DIR, "area_urls")
+    SAVE_DIR = os.path.join(DATA_DIR, "image_urls")
     filename= os.path.join(SAVE_DIR,"livecam_links.csv")
     all_links = scrape_all()
     save_to_csv(all_links, filename)
