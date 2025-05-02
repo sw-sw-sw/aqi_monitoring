@@ -1,4 +1,3 @@
-data/
 logs/
 bak/
 static/
@@ -12,5 +11,10 @@ aqi_monitoring.egg-info
 .env
 __pycache__/
 
-crested-primacy-153206-a573a55da356.json
+# data/ディレクトリを無視するが、特定のファイルは追跡する
+data/*
+!data/kobe_aqi_data.csv
 
+
+
+**/CLAUDE.local.md

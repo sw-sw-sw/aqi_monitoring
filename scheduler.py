@@ -22,43 +22,49 @@ def main():
         logger.info("AQIデータを取得しています...")
         data = fetch_aqi_data()
         
-        if data:
-            # 取得したデータのログ出力
-            logger.info("取得したデータ:")
-            for key, value in data.items():
-                if key in ["地点", "取得時間", "AQI値", "大気質ステータス", "主要汚染物質"]:
-                    logger.info(f"  {key}: {value}")
-            
-            # 汚染物質データのログ出力
-            logger.info("  汚染物質データ:")
-            for key in ["PM2.5", "PM10", "O3", "NO2"]:
-                if key in data and data[key]:
-                    logger.info(f"    {key}: {data[key]}")
-            
-            # 気象データのログ出力
-            logger.info("  気象データ:")
-            for key in ["温度", "湿度", "気圧", "風速", "降水量"]:
-                if key in data and data[key]:
-                    logger.info(f"    {key}: {data[key]}")
-            
-            # CSVに保存
-            logger.info("データをCSVに保存しています...")
-            save_result = save_to_csv(data, CSV_FILE_PATH)
-            save_to_csv(data, CSV_FILE_PATH2)
-            
-            if save_result:
-                # グラフの更新
-                logger.info("グラフを更新しています...")
-                graph_result = fetch_aqi_data()
-                
-                if graph_result:
-                    logger.info("すべての処理が完了しました")
-                else:
-                    logger.error("グラフの更新に失敗しました")
-            else:
-                logger.error("データの保存に失敗しました")
-        else:
+        if not data:
             logger.error("データを取得できませんでした")
+            return
+            
+        # 取得したデータのログ出力
+        logger.info("取得したデータ:")
+        # 基本情報のログ出力
+        basic_keys = ["地点", "取得時間", "AQI値", "大気質ステータス", "主要汚染物質"]
+        for key in basic_keys:
+            if key in data:
+                logger.info(f"  {key}: {data[key]}")
+        
+        # 汚染物質データのログ出力
+        logger.info("  汚染物質データ:")
+        pollutant_keys = ["PM2.5", "PM10", "O3", "NO2"]
+        for key in pollutant_keys:
+            if key in data and data[key]:
+                logger.info(f"    {key}: {data[key]}")
+        
+        # 気象データのログ出力
+        logger.info("  気象データ:")
+        weather_keys = ["温度", "湿度", "気圧", "風速", "降水量"]
+        for key in weather_keys:
+            if key in data and data[key]:
+                logger.info(f"    {key}: {data[key]}")
+        
+        # CSVに保存
+        logger.info("データをCSVに保存しています...")
+        save_result = save_to_csv(data, CSV_FILE_PATH)
+        save_to_csv(data, CSV_FILE_PATH2)
+        
+        if not save_result:
+            logger.error("データの保存に失敗しました")
+            return
+            
+        # グラフの更新
+        logger.info("グラフを更新しています...")
+        graph_result = generate_graph(os.path.join(DATA_DIR, "aqi_graph.png"))
+        
+        if graph_result:
+            logger.info("すべての処理が完了しました")
+        else:
+            logger.error("グラフの更新に失敗しました")
     
     except Exception as e:
         logger.error(f"実行中にエラーが発生しました: {e}")
@@ -73,13 +79,4 @@ def main():
 
 if __name__ == "__main__":
     main()
-    
-    output_path = os.path.join(DATA_DIR, "aqi_graph.png")
-    # gererate_graph()
-    try:
-        generate_graph(output_path)
-        logger.info("グラフ画像の生成が完了しました")
-    except Exception as e:
-        logger.error(f"グラフ画像の生成中にエラーが発生しました: {e}")
-        logger.error(traceback.format_exc())
     print("すべての処理が完了しました")
