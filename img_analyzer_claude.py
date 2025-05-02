@@ -230,7 +230,6 @@ def main(input_dir, output_dir):
     yen_cost = total_cost['total'] * 142  # Assuming a conversion rate
     print(f"合計コスト: ¥{yen_cost:.2f} JPY")
     
-    
     print_contrails_analysis(results)
 
 def print_contrails_analysis(analysis_results):
