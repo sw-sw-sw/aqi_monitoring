@@ -10,95 +10,34 @@ from sklearn.preprocessing import StandardScaler
 from scipy.signal import find_peaks
 
 def setup_japanese_font():
-    """
-    日本語フォントを設定する関数
-    
-    Returns:
-        str: 使用可能な日本語フォント名
-    """
-    # 明示的にIPAexゴシックを指定
     plt.rcParams['font.family'] = 'IPAexGothic'
-    
-    # matplotlibのグローバル設定
     plt.rcParams['axes.unicode_minus'] = False
-    
     return 'IPAexGothic'
 
 def load_and_preprocess_data(file_path):
-    """
-    CSVデータを読み込み、前処理を行う関数
-    
-    Args:
-        file_path (str): CSVファイルのパス
-    
-    Returns:
-        pd.DataFrame: 前処理されたデータフレーム
-    """
-    # CSVファイルを読み込む
     df = pd.read_csv(file_path, encoding='utf-8-sig')
-    
-    # 日時列を datetime 型に変換
     df['取得時間'] = pd.to_datetime(df['取得時間'])
-    
-    # 数値型に変換する列
     numeric_columns = ['AQI値', 'PM2.5', 'PM10', 'O3', 'NO2', '温度', '湿度', '気圧', '風速', '降水量']
-    
-    # 各列を数値型に変換（"non"はNaNに置き換え）
     for col in numeric_columns:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col].replace('non', pd.NA), errors='coerce')
-    
-    # 数値列のみを取得（エラーを回避するため）
     df_numeric = df[['取得時間'] + [col for col in numeric_columns if col in df.columns]]
-    
-    # インデックスを設定
     df_numeric = df_numeric.set_index('取得時間')
-    
-    # 一定の時間間隔でリサンプリング（警告を回避するため'h'を使用）
     df_resampled = df_numeric.resample('h').mean()
-    
-    # 欠損値を線形補間
     df_resampled = df_resampled.interpolate(method='linear')
-    
     return df_resampled
 
 def fourier_transform(data, sampling_freq=1.0):
-    """
-    時系列データのフーリエ変換を実行
-    
-    Args:
-        data (np.array): 解析する時系列データ
-        sampling_freq (float): サンプリング周波数（デフォルト: 1.0Hz = 1時間ごと）
-    
-    Returns:
-        tuple: (周波数配列, 振幅スペクトル配列, 位相スペクトル配列)
-    """
-    # 欠損値を取り除く
     if isinstance(data, pd.Series):
         data = data.dropna().values
-    
-    # データ長
     n = len(data)
-    
-    # データが十分な長さであることを確認
     if n < 4:
         return np.array([]), np.array([]), np.array([])
-    
-    # 平均を引いてトレンドを削除
     data_normalized = data - np.mean(data)
-    
-    # FFTの実行
     fft_result = fftpack.fft(data_normalized)
-    
-    # 周波数軸の作成（0からナイキスト周波数まで）
     freqs = fftpack.fftfreq(n, d=1/sampling_freq)[:n//2]
-    
-    # 振幅スペクトル（絶対値）を計算、正規化
     amplitudes = 2.0/n * np.abs(fft_result)[:n//2]
-    
-    # 位相スペクトルを計算
     phases = np.angle(fft_result)[:n//2]
-    
     return freqs, amplitudes, phases
 
 def find_dominant_frequencies(freqs, amplitudes, n_peaks=5, min_dist=1):

@@ -4,20 +4,26 @@ import logging
 # 基本設定
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 ABOVE_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+STATIC_DIR = os.path.join(PROJECT_ROOT, "static")
+LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
+
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+
 IMAGE_ANALYSIS_DIR = os.path.join(DATA_DIR, "image_analysis")
 IMAGE_CRAWLER_DIR = os.path.join(DATA_DIR, "image_crawler_data")
 MOVIE_DIR = os.path.join(DATA_DIR, "movies")
-STATIC_DIR = os.path.join(PROJECT_ROOT, "static")
-LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
 IMAGE_WEB_URL_DIR = os.path.join(DATA_DIR, "image_web_urls")
 
 # ディレクトリの作成
-os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(STATIC_DIR, exist_ok=True)
 os.makedirs(LOG_DIR, exist_ok=True)
+os.makedirs(DATA_DIR, exist_ok=True)
+
+
 os.makedirs(IMAGE_ANALYSIS_DIR, exist_ok=True)
 os.makedirs(IMAGE_CRAWLER_DIR, exist_ok=True)
+os.makedirs(MOVIE_DIR, exist_ok=True)
+os.makedirs(IMAGE_WEB_URL_DIR, exist_ok=True)
 
 # ファイルパス
 AQI_URL = "https://aqicn.org/city/japan/kobeshisumaku/suma/jp/"
