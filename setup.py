@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="aqi_monitoring",
-    version="0.2.0",
+    version="0.2.1",  # バージョンを更新
     description="神戸市須磨区の大気質と気象データを収集・分析するシステム",
     author="AQI Monitoring Team",
     author_email="info@example.com",
