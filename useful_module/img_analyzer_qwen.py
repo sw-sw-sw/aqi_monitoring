@@ -8,8 +8,8 @@ def main():
     # 環境変数の読み込み
     load_dotenv()
     api_key = os.getenv("DASHSCOPE_API_KEY")
-    INPUT_DIR = os.path.join(IMAGE_ANALYSIS_DIR, "image_analysis/input")
-    OUTPUT_DIR = os.path.join(IMAGE_ANALYSIS_DIR, "image_analysis/output")
+    INPUT_DIR = os.path.join(IMAGE_ANALYSIS_DIR, "input")
+    OUTPUT_DIR = os.path.join(IMAGE_ANALYSIS_DIR, "output")
     
     if not api_key:
         print("エラー: DASHSCOPE_API_KEYが設定されていません。")
