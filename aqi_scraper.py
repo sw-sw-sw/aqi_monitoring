@@ -166,3 +166,6 @@ if __name__ == "__main__":
 
     else:
         print("データを取得できませんでした。APIキーが設定されているか確認してください。")
+
+# AQI値をAPI経由で取得する。
+# https://api.waqi.info

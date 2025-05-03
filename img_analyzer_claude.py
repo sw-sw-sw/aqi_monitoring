@@ -213,7 +213,7 @@ def main(input_dir, output_dir):
     
     # 結果をファイルに保存
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    result_file = os.path.join(IMAGE_ANALYSIS_DIR, f"image_analysis_results_{timestamp}.json")
+    result_file = os.path.join(output_dir, f"image_analysis_results_{timestamp}.json")
 
     with open(result_file, "w", encoding="utf-8") as f:
         json.dump({"results": results, "summary": summary}, f, ensure_ascii=False, indent=2)

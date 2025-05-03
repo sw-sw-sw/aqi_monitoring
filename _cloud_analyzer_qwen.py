@@ -7,6 +7,8 @@ from typing import Dict, Any, Tuple, Optional, BinaryIO
 from openai import OpenAI
 from datetime import datetime
 
+# Qwen APIを使って、画像中の飛行機雲を探すクラス
+
 class ImageAnalyzer(ABC):
     """画像分析の基底クラス"""
     
@@ -134,7 +136,7 @@ Key identification points for contrails:
 - Multiple lines are often present
 
 Key identification points for stratiform clouds:
-- layered appearance
+- layered appearance like wave
 - Uniform, sheet-like structure
 - Typically cover large areas of the sky
 - May appear as thin, translucent layers or thick, gray blankets

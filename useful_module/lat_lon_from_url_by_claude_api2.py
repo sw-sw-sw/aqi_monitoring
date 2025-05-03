@@ -3,7 +3,7 @@ import re
 import json
 import os
 from typing import Dict, Any, Optional, Tuple
-from useful_module.claude_api_c import *
+from _claude_api_c import *
 from dotenv import load_dotenv
 load_dotenv()
 

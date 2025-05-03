@@ -73,7 +73,7 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
     AQIデータを可視化し、画像として保存する関数
     3つのサブプロットに分けて表示する:
     1. AQI値の推移
-    2. 汚染物質の推移 (PM2.5, PM10, O3, NO2)
+    2. 汚染物質の推移 (PM2.5, O3)
     3. 気象データの推移 (温度, 湿度, 気圧, 風速, 降水量)
     
     Args:
@@ -157,8 +157,8 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
     ax1.legend(loc='upper left', prop={'family': 'IPAexGothic'})
     
     # 2. 汚染物質のグラフ作成
-    pollutants = ['PM2.5', 'PM10', 'O3', 'NO2']
-    
+    pollutants = ['PM2.5', 'O3']  # PM2.5とO3のみを表示
+
     # 各汚染物質をプロット
     for pollutant in pollutants:
         if pollutant in df.columns:
