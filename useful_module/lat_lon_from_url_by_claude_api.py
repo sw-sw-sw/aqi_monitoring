@@ -171,7 +171,5 @@ def test_camera_info_extraction():
     print("camera info results:")
     print(json.dumps(result, indent=2, ensure_ascii=False))
     
-
-
 if __name__ == "__main__":
     test_camera_info_extraction()
