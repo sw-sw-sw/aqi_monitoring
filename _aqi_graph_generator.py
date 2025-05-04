@@ -7,68 +7,34 @@ import os
 from config import logger, DATA_DIR
 
 def setup_japanese_font():
-    """
-    日本語フォントを設定する関数
-    
-    Returns:
-        str: 使用可能な日本語フォント名
-    """
     # 明示的にIPAexゴシックを指定
     plt.rcParams['font.family'] = 'IPAexGothic'
-    
     # matplotlibのグローバル設定
     plt.rcParams['axes.unicode_minus'] = False
-    
     return 'IPAexGothic'
 
 def rgba_to_matplotlib(rgba_str):
     """
     CSS形式のrgba文字列をmatplotlibの色形式に変換する関数
-    
-    Args:
-        rgba_str (str): CSSスタイルのrgba文字列 (例: 'rgba(0,228,0,0.2)')
-    
-    Returns:
-        tuple: matplotlibで使用可能な色とアルファ値のタプル
     """
-    # rgba文字列から数値を抽出
     rgba_values = rgba_str.replace('rgba(', '').replace(')', '').split(',')
-    
-    # RGB値を0-1の範囲に正規化
     r, g, b = [int(x.strip()) / 255 for x in rgba_values[:3]]
-    
-    # アルファ値を取得（指定がない場合は1）
     alpha = float(rgba_values[3]) if len(rgba_values) > 3 else 1.0
-    
     return (r, g, b, alpha)
 
 def load_and_preprocess_data(file_path):
-    """
-    CSVデータを読み込み、前処理を行う関数
-    
-    Args:
-        file_path (str): CSVファイルのパス
-    
-    Returns:
-        pd.DataFrame: 前処理されたデータフレーム
-    """
-    # CSVファイルを読み込む
+    # CSVデータを読み込み、前処理を行う関数
     df = pd.read_csv(file_path, encoding='utf-8-sig')
-    
-    # 日時列を datetime 型に変換
     df['取得時間'] = pd.to_datetime(df['取得時間'])
-    
-    # 数値型に変換する列
     numeric_columns = ['AQI値', 'PM2.5', 'PM10', 'O3', 'NO2', '温度', '湿度', '気圧', '風速', '降水量']
-    
-    # 各列を数値型に変換（"non"はNaNに置き換え）
     for col in numeric_columns:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col].replace('non', pd.NA), errors='coerce')
-    
+    # 日付だけを抜き出し
+    df.loc[:, '日付'] = df['取得時間'].dt.date
     return df
 
-def create_aqi_visualization(df, output_path='aqi_visualization.png', days=None):    
+def create_aqi_visualization(file_path, output_path='aqi_visualization.png', days=None):    
     """
     AQIデータを可視化し、画像として保存する関数
     daysパラメータが指定された場合は最新N日間のみ表示、指定がない場合は全期間表示
@@ -78,6 +44,7 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png', days=None)
         output_path (str): 出力画像のパス
         days (int, optional): 表示する日数。Noneの場合は全期間を表示
     """
+    df = load_and_preprocess_data(file_path)
     # 日本語フォントの設定
     japanese_font = setup_japanese_font()
     
@@ -324,18 +291,12 @@ if __name__ == "__main__":
         tuple: (全期間グラフの生成結果, 最新N日分グラフの生成結果)
     """
     # CSVファイルのパス
-    csv_path = os.path.join(DATA_DIR, 'kobe_aqi_data.csv')
+    csv_file_path = os.path.join(DATA_DIR, 'kobe_aqi_data.csv')
     all_data_output_path = os.path.join(DATA_DIR, 'aqi_graph_all.png')
     recent_data_output_path = os.path.join(DATA_DIR, 'aqi_graph_recent.png')
     
-
-    # データの読み込みと前処理
-    df = load_and_preprocess_data(csv_path)
-    
     # 全期間グラフの生成
-    all_data_result = create_aqi_visualization(df, all_data_output_path, days=None)
-    
+    all_data_result = create_aqi_visualization(csv_file_path, all_data_output_path, days=None)
     # 最新N日分のグラフの生成
-    recent_data_result = create_aqi_visualization(df, recent_data_output_path, days=5)
+    recent_data_result = create_aqi_visualization(csv_file_path, recent_data_output_path, days=5)
     
-    print("すべてのグラフ生成が完了しました。")

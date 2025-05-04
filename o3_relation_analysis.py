@@ -97,7 +97,7 @@ plt.title('月別の相関係数', fontsize=14)
 plt.grid(True, axis='y', alpha=0.3)
 
 plt.tight_layout()
-plt.savefig('data/月別相関係数.png')
+plt.savefig('data/o3_月別相関係数.png')
 
 # 3. 濃度レベル別の相関分析
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
@@ -133,7 +133,7 @@ ax2.set_xlabel('O3濃度レベル', fontsize=12)
 ax2.set_ylabel('PM2.5濃度レベル', fontsize=12)
 
 plt.tight_layout()
-plt.savefig('data/PM2.5とO3の濃度レベル相関.png')
+plt.savefig('data/o3_PM2.5とO3の濃度レベル相関.png')
 
 # 4. 経時的相関分析（移動平均）
 plt.figure(figsize=(16, 8))
@@ -162,7 +162,7 @@ plt.grid(True, alpha=0.3)
 plt.legend(fontsize=12)
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('data/PM2.5とO3の24時間移動相関.png')
+plt.savefig('data/o3_PM2.5とO3の24時間移動相関.png')
 
 # 5. 相関分析の統計的要約
 print("\n=== 詳細な統計分析 ===")
@@ -199,7 +199,7 @@ plt.title('PM2.5とO3の時差相関分析\n（正のラグ：O3が遅れる、�
 plt.grid(True, axis='y', alpha=0.3)
 plt.tight_layout()
 
-plt.savefig('data/時差相関分析.png')
+plt.savefig('data/o3_時差相関分析.png')
 
 print(f"\n最大相関のタイムラグ: {lag_range[cross_correlations.index(max(cross_correlations))]}時間")
 print(f"最大相関係数: {max(cross_correlations):.3f}")

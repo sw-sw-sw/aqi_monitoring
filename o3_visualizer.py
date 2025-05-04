@@ -39,7 +39,7 @@ plt.legend(fontsize=12)
 plt.grid(True, alpha=0.3)
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.savefig('data/日最高O3濃度の時系列推移.png')
+plt.savefig('data/o3_日最高O3濃度の時系列推移.png')
 
 # 図2: O3濃度の分布ヒストグラム
 plt.figure(figsize=(14, 8))
@@ -54,7 +54,7 @@ plt.legend(fontsize=12)
 plt.grid(True, axis='y', alpha=0.3)
 plt.xticks(bins)
 plt.tight_layout()
-plt.savefig('data/日最高O3濃度の分布.png')
+plt.savefig('data/o3_日最高O3濃度の分布.png')
 
 # 図3: 月ごとの超過状況（円グラフと棒グラフの組み合わせ）
 df['月'] = df['取得時間'].dt.month
@@ -112,7 +112,7 @@ ax2.pie(sizes, labels=labels, colors=colors, autopct='', startangle=90,
 ax2.set_title('O3濃度レベル別の日数分布', fontsize=14)
 
 plt.tight_layout()
-plt.savefig('data/O3濃度レベル別の日数分布.png')
+plt.savefig('data/o3_O3濃度レベル別の日数分布.png')
 
 # 図4: 箱ひげ図（月ごとのO3濃度分布）
 plt.figure(figsize=(12, 8))
@@ -129,7 +129,7 @@ plt.title('月ごとのO3濃度分布（箱ひげ図）', fontsize=16, pad=20)
 plt.legend(fontsize=12)
 plt.grid(True, axis='y', alpha=0.3)
 plt.tight_layout()
-plt.savefig('data/月ごとのO3濃度分布.png')
+plt.savefig('data/o3_月ごとのO3濃度分布.png')
 
 # 数値サマリーの再表示（参考用）
 print("=== 分析結果サマリー ===")

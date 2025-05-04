@@ -1,9 +1,149 @@
-
 import os
+import json
+import time
+import requests
+from datetime import datetime
+from config import *
+
 import pandas as pd
 import re
-from config import logger, CSV_FILE_PATH
 
+from dotenv import load_dotenv
+load_dotenv()
+
+# WAQI API エンドポイントとトークン
+# 注意: 実際のAPIキーに置き換える必要があります
+API_BASE_URL = "https://api.waqi.info"
+API_TOKEN = os.getenv('AQI_API_TOKEN')  # api_token.pyからインポート
+
+def fetch_aqi_data():
+    """神戸市須磨区の大気質データをAPIから取得する関数"""
+    try:
+        # 須磨区の地点を取得するためのURL
+        # 地点名で検索する方法
+        url = f"{API_BASE_URL}/feed/japan/kobeshisumaku/suma/?token={API_TOKEN}"
+        
+        # 代替方法: 地理座標を使用（須磨区の緯度経度を使用）
+        # Suma Ward, Kobe coordinates: 約 34.65, 135.13
+        # url = f"{API_BASE_URL}/feed/geo:34.65;135.13/?token={API_TOKEN}"
+        
+        logger.info(f"APIリクエストを送信: {url.replace(API_TOKEN, '***')}")
+        
+        # APIリクエストを送信
+        response = requests.get(url)
+        
+        # レスポンスをチェック
+        if response.status_code != 200:
+            logger.error(f"APIエラー: ステータスコード {response.status_code}")
+            return None
+            
+        # JSONデータを解析
+        data = response.json()
+        
+        # レスポンスの詳細をデバッグ用に保存
+        debug_dir = os.path.join(DATA_DIR, "debug")
+        os.makedirs(debug_dir, exist_ok=True)
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        
+        with open(os.path.join(debug_dir, f"api_response_{timestamp}.json"), "w", encoding="utf-8") as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        
+        # データの有効性をチェック
+        if data["status"] != "ok" or "data" not in data:
+            logger.error(f"無効なAPIレスポンス: {data['status']}")
+            # エラーの場合はその情報を詳細に記録
+            if "data" in data and isinstance(data["data"], str):
+                logger.error(f"エラーメッセージ: {data['data']}")
+            return None
+            
+        # 結果を整形
+        result = parse_api_response(data)
+        
+        # csvに保存
+        logger.info("データをCSVに保存しています...")
+        save_result = save_to_csv(data, CSV_FILE_PATH)
+        # save_to_csv(data, CSV_FILE_PATH2)
+        return result
+        
+    except Exception as e:
+        logger.error(f"APIリクエスト中にエラーが発生しました: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return None
+     
+def parse_api_response(api_data):
+    """APIレスポンスからデータを抽出・整形する関数"""
+    try:
+        data = api_data["data"]
+        
+        # 基本データを取得
+        result = {
+            "地点": "神戸市 須磨区",  # 固定値として設定
+            "取得時間": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            "AQI値": data.get("aqi", ""),
+            "大気質ステータス": get_aqi_status(data.get("aqi", 0)),
+            "主要汚染物質": data.get("dominentpol", ""),
+        }
+        
+        # 時間情報を更新
+        if "time" in data and "iso" in data["time"]:
+            try:
+                api_time = datetime.fromisoformat(data["time"]["iso"].replace("Z", "+00:00"))
+                result["取得時間"] = api_time.strftime('%Y-%m-%d %H:%M:%S')
+            except:
+                pass
+        
+        # 汚染物質データと気象データの取得
+        if "iaqi" in data:
+            iaqi = data["iaqi"]
+            
+            # 大気汚染物質
+            result.update({
+                "PM2.5": str(iaqi.get("pm25", {}).get("v", "")),
+                "PM10": str(iaqi.get("pm10", {}).get("v", "")),
+                "O3": str(iaqi.get("o3", {}).get("v", "")),
+                "NO2": str(iaqi.get("no2", {}).get("v", "")),
+            })
+            
+            # 気象データ（CSVのカラム名に合わせて変更）
+            result.update({
+                "温度": str(iaqi.get("t", {}).get("v", "0.0")),
+                "湿度": str(iaqi.get("h", {}).get("v", "0.0")),
+                "気圧": str(iaqi.get("p", {}).get("v", "0.0")),
+                "風速": str(iaqi.get("w", {}).get("v", "0.0")),
+                "降水量": str(iaqi.get("r", {}).get("v", "0.0")),
+            })
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"APIレスポンスの解析中にエラーが発生しました: {e}")
+        import traceback
+        logger.error(traceback.format_exc())
+        return None
+    
+def get_aqi_status(aqi_value):
+    """AQI値に基づいて大気質ステータスを返す関数"""
+    try:
+        aqi = int(aqi_value)
+        if aqi <= 50:
+            return "良好"
+        elif aqi <= 100:
+            return "普通"
+        elif aqi <= 150:
+            return "敏感な人に有害"
+        elif aqi <= 200:
+            return "健康に良くない"
+        elif aqi <= 300:
+            return "非常に健康に良くない"
+        else:
+            return "危険"
+    except (ValueError, TypeError):
+        return ""
+    
+    
+#------------------------- data handler-------------------------
+    
 def save_to_csv(data, filename=CSV_FILE_PATH):
     """
     スクレイピングしたデータをCSVファイルに保存する関数
@@ -90,100 +230,6 @@ def save_to_csv(data, filename=CSV_FILE_PATH):
         import traceback
         logger.error(traceback.format_exc())
         return False
-    
-def load_csv_data(filename=CSV_FILE_PATH):
-    """
-    CSVファイルからデータを読み込む関数
-    
-    Args:
-        filename: 読み込むCSVファイルのパス
-    
-    Returns:
-        DataFrame: 読み込んだデータフレーム、エラー時はNone
-    """
-    try:
-        if not os.path.exists(filename):
-            logger.error(f"CSVファイルが見つかりません: {filename}")
-            return None
-            
-        # CSVファイルを読み込む
-        df = pd.read_csv(filename, encoding='utf-8-sig')
-        logger.info(f"CSVファイルを読み込みました: {filename}")
-        logger.info(f"データ形状: {df.shape}")
-        
-        # 列名のログ出力
-        logger.info(f"列名: {', '.join(df.columns)}")
-        
-        # 古いフォーマットのCSVかどうかを確認（SO2とCOがある場合）
-        if "SO2" in df.columns and "CO" in df.columns:
-            logger.warning("古いフォーマットのCSVが検出されました。新しいフォーマットに変換します。")
-            
-            # 新しいデータフレームの作成
-            new_df = pd.DataFrame()
-            
-            # 共通カラムをコピー
-            common_columns = ["地点", "取得時間", "AQI値", "大気質ステータス", "主要汚染物質", "PM2.5", "PM10", "O3", "NO2"]
-            for col in common_columns:
-                if col in df.columns:
-                    new_df[col] = df[col]
-                else:
-                    new_df[col] = "non"
-            
-            # 新しいカラムを追加
-            new_weather_columns = ["温度", "湿度", "気圧", "風速", "降水量"]
-            for col in new_weather_columns:
-                new_df[col] = "non"
-            
-            # 欠損値を "non" に置き換え
-            new_df = new_df.fillna("non")
-            
-            # 新しいデータフレームを返す
-            df = new_df
-            
-            # 変換したデータを保存
-            df.to_csv(filename, index=False, encoding='utf-8-sig')
-            logger.info(f"CSVファイルを新しいフォーマットに変換して保存しました: {filename}")
-        
-        # 必要な列が存在するか確認
-        required_columns = ["地点", "取得時間", "AQI値", "大気質ステータス", "主要汚染物質", 
-                           "PM2.5", "PM10", "O3", "NO2", "温度", "湿度", "気圧", "風速", "降水量"]
-        
-        missing_columns = set(required_columns) - set(df.columns)
-        if missing_columns:
-            logger.warning(f"CSVファイルに以下の列が不足しています: {', '.join(missing_columns)}")
-            # 不足している列を追加
-            for col in missing_columns:
-                df[col] = "non"
-            # 変更を保存
-            df.to_csv(filename, index=False, encoding='utf-8-sig')
-            logger.info("不足している列を追加しました")
-        
-        # データ型の確認
-        for col in df.columns:
-            logger.info(f"列 '{col}' の型: {df[col].dtype}")
-            
-        # "non"を除外してデータ型を確認
-        for col in ["AQI値", "PM2.5", "PM10", "O3", "NO2", "温度", "湿度", "気圧", "風速", "降水量"]:
-            if col in df.columns:
-                # "non"を一時的にNaNに変換して数値型に変換を試みる
-                temp_series = df[col].replace("non", pd.NA)
-                try:
-                    numeric_series = pd.to_numeric(temp_series, errors='coerce')
-                    non_na_count = numeric_series.notna().sum()
-                    logger.info(f"列 '{col}' の数値データ数: {non_na_count}/{len(df)}")
-                except:
-                    logger.warning(f"列 '{col}' の数値変換に失敗しました")
-        
-        # 一部のデータを表示
-        if not df.empty:
-            logger.info(f"最初の行: {df.iloc[0].to_dict()}")
-        
-        return df
-    except Exception as e:
-        logger.error(f"CSVファイルの読み込み中にエラーが発生しました: {e}")
-        import traceback
-        logger.error(traceback.format_exc())
-        return None
 
 def preprocess_aqi_data(df):
     """
@@ -294,4 +340,20 @@ def extract_numeric_value(text):
         except ValueError:
             return None
     return None
+    
 
+
+if __name__ == "__main__":
+    """スクリプトを直接実行した場合のテスト実行"""
+    print("神戸市須磨区のAQIデータをAPI経由で取得します...")
+    result = fetch_aqi_data()
+    if result:
+        print("\nAPI取得結果:")
+        for key, value in result.items():
+            print(f"{key}: {value}")
+
+    else:
+        print("データを取得できませんでした。APIキーが設定されているか確認してください。")
+
+# AQI値をAPI経由で取得する。
+# https://api.waqi.info
