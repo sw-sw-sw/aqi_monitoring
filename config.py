@@ -8,6 +8,8 @@ STATIC_DIR = os.path.join(PROJECT_ROOT, "static")
 LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
 
 DATA_DIR = os.path.join(PROJECT_ROOT, "data")
+DATA_BAK_DIR = os.path.join(PROJECT_ROOT, "data_bak")
+
 
 IMAGE_ANALYSIS_DIR = os.path.join(DATA_DIR, "image_analysis")
 IMAGE_CRAWLER_DIR = os.path.join(DATA_DIR, "image_crawler_data")
