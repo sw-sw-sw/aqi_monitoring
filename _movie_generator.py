@@ -27,6 +27,23 @@ def format_timestamp(filename):
     # 形式が異なる場合はそのまま返す
     return name_without_ext
 
+def extract_date_from_filename(filename):
+    """ファイル名から日付オブジェクトを抽出"""
+    basename = os.path.basename(filename)
+    name_without_ext = os.path.splitext(basename)[0]
+    
+    # タイムスタンプが適切な形式かチェック (YYYYMMDDHHMMSSの14桁を想定)
+    if len(name_without_ext) == 14 and name_without_ext.isdigit():
+        year = int(name_without_ext[0:4])
+        month = int(name_without_ext[4:6])
+        day = int(name_without_ext[6:8])
+        
+        # datetime オブジェクトを返す
+        return datetime(year, month, day)
+    
+    # 形式が異なる場合は None を返す
+    return None
+
 def add_timestamp_to_image(img, timestamp):
     """画像にタイムスタンプを追加"""
     # フォント設定
@@ -51,8 +68,44 @@ def add_timestamp_to_image(img, timestamp):
     
     return img
 
-def generate_movie(input_dir, output_dir, output_file_name, time_stamp=True):
-    """タイムスタンプ付きの画像からムービーを作成する"""
+def filter_images_by_days(image_files, days=None):
+    """
+    指定された日数分の最新画像だけをフィルタリング
+    days=None の場合はすべての画像を返す
+    """
+    if days is None or days <= 0:
+        # 日数が指定されていない、または0以下の場合は全画像を返す
+        return image_files
+    
+    # 日付ごとに画像をグループ化
+    images_by_date = {}
+    for img_file in image_files:
+        date_obj = extract_date_from_filename(img_file)
+        if date_obj:
+            # 日付をキーとして画像をグループ化
+            date_str = date_obj.strftime('%Y-%m-%d')
+            if date_str not in images_by_date:
+                images_by_date[date_str] = []
+            images_by_date[date_str].append(img_file)
+    
+    # 日付でソート（新しい順）
+    sorted_dates = sorted(images_by_date.keys(), reverse=True)
+    
+    # 指定された日数分だけ選択
+    selected_dates = sorted_dates[:days]
+    
+    # 選択された日付の画像を集める
+    filtered_images = []
+    for date in sorted(selected_dates):  # 日付順に並べ直す
+        filtered_images.extend(sorted(images_by_date[date]))  # 各日の画像もソート
+    
+    return filtered_images
+
+def generate_movie(input_dir, output_dir, output_file_name, days=None, time_stamp=True):
+    """
+    タイムスタンプ付きの画像からムービーを作成する
+    days: 処理する日数（指定がない場合はすべての日を処理）
+    """
     # 出力ディレクトリの作成
     os.makedirs(output_dir, exist_ok=True)
     
@@ -65,13 +118,24 @@ def generate_movie(input_dir, output_dir, output_file_name, time_stamp=True):
     
     # タイムスタンプでソート
     image_files.sort()
-    total_images = len(image_files)
-    print(f"合計 {total_images} 枚の画像を処理します", file=sys.stderr)
+    
+    # 指定された日数でフィルタリング
+    filtered_images = filter_images_by_days(image_files, days)
+    total_images = len(filtered_images)
+    
+    if days:
+        print(f"直近 {days} 日分、合計 {total_images} 枚の画像を処理します", file=sys.stderr)
+    else:
+        print(f"合計 {total_images} 枚の画像を処理します", file=sys.stderr)
+    
+    if not filtered_images:
+        print("指定された日数分の画像が見つかりません")
+        return None
     
     # 最初の画像を読み込んでサイズを取得
-    first_image = cv2.imread(image_files[0])
+    first_image = cv2.imread(filtered_images[0])
     if first_image is None:
-        print(f"画像の読み込みに失敗しました: {image_files[0]}")
+        print(f"画像の読み込みに失敗しました: {filtered_images[0]}")
         return None
     
     height, width = first_image.shape[:2]
@@ -79,11 +143,11 @@ def generate_movie(input_dir, output_dir, output_file_name, time_stamp=True):
     # 現在の日付と時刻を取得して出力ファイル名に追加
     current_datetime = datetime.now()
     
-    
-    # 出力ファイル名の設定（日付を追加） 
-    # current_date = current_datetime.strftime("%Y-%m-%d")
-    # output_filename = f"timelapse_{output_file_name}_{current_date}.mp4"
-    output_filename = f"{output_file_name}.mp4"
+    # 出力ファイル名の設定
+    if days:
+        output_filename = f"{output_file_name}_{days}days.mp4"
+    else:
+        output_filename = f"{output_file_name}.mp4"
 
     output_path = os.path.join(output_dir, output_filename)
     
@@ -97,7 +161,7 @@ def generate_movie(input_dir, output_dir, output_file_name, time_stamp=True):
     progress_bar_length = 20  # プログレスバーの最大長
     
     # 各画像を動画に追加
-    for i, img_file in enumerate(image_files):
+    for i, img_file in enumerate(filtered_images):
         if i % 20 == 0:  # 進捗表示を減らす
             # 現在の進捗率を計算
             progress = int((i + 1) / total_images * progress_bar_length)
@@ -128,7 +192,8 @@ def generate_movie(input_dir, output_dir, output_file_name, time_stamp=True):
     return output_path
 
 if __name__ == "__main__":
+
     file_name = 'timelasp_movie_suma'
-    input_dir = os.path.join(IMAGE_CRAWLER_DIR, "suma")
+    input_dir = os.path.join(IMAGE_CRAWLER_DIR, 'suma')
     output_dir = MOVIE_DIR
-    generate_movie(input_dir, output_dir, file_name, time_stamp=True)
+    generate_movie(input_dir, output_dir, file_name, 1)

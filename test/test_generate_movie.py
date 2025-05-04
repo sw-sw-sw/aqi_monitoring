@@ -2,7 +2,7 @@
 # その画像をムービー化する
 
 from bak.image_analyzer_cv import *
-from contrail_movie_generator import *
+from _movie_generator import *
 
 AREA_DIR = 'suma'
 input_dir = os.path.join(IMAGE_CRAWLER_DIR, AREA_DIR)
