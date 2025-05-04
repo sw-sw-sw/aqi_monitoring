@@ -46,7 +46,7 @@ def generate_url(url, _time_stamp):
     print(f"Generated URL: {full_url}")
     return full_url, timestamp
 
-def download_image(url,save_dir, timestamp):
+def download_crawl_image(url,save_dir, timestamp):
     full_url, timestamp = generate_url(url, timestamp)
     try:
         headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"}
