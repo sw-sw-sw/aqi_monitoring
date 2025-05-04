@@ -78,9 +78,10 @@ def generate_movie(input_dir, output_dir, output_file_name, time_stamp=True):
     
     # 現在の日付と時刻を取得して出力ファイル名に追加
     current_datetime = datetime.now()
-    current_date = current_datetime.strftime("%Y-%m-%d")
+    
     
     # 出力ファイル名の設定（日付を追加）
+    # current_date = current_datetime.strftime("%Y-%m-%d")
     # output_filename = f"timelapse_{output_file_name}_{current_date}.mp4"
     output_filename = f"timelapse_movie_{output_file_name}.mp4"
 

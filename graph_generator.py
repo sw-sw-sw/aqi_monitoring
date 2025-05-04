@@ -68,20 +68,38 @@ def load_and_preprocess_data(file_path):
     
     return df
 
-def create_aqi_visualization(df, output_path='aqi_visualization.png'):
+def create_aqi_visualization(df, output_path='aqi_visualization.png', days=None):    
     """
     AQIデータを可視化し、画像として保存する関数
-    3つのサブプロットに分けて表示する:
-    1. AQI値の推移
-    2. 汚染物質の推移 (PM2.5, O3)
-    3. 気象データの推移 (温度, 湿度, 気圧, 風速, 降水量)
+    daysパラメータが指定された場合は最新N日間のみ表示、指定がない場合は全期間表示
     
     Args:
         df (pd.DataFrame): 前処理されたデータフレーム
         output_path (str): 出力画像のパス
+        days (int, optional): 表示する日数。Noneの場合は全期間を表示
     """
     # 日本語フォントの設定
     japanese_font = setup_japanese_font()
+    
+    # 日数が指定されている場合は、最新の指定日数分のデータのみをフィルタリング
+    if days is not None:
+        end_date = df['取得時間'].max()
+        start_date = end_date - pd.Timedelta(days=days-1)  # 最新のN日間（当日を含むため-1）
+        
+        # 期間でデータをフィルタリング
+        filtered_df = df[(df['取得時間'] >= start_date) & (df['取得時間'] <= end_date)]
+        
+        # データが存在しない場合のエラーハンドリング
+        if filtered_df.empty:
+            print(f"警告: 指定期間 ({start_date} ～ {end_date}) にデータが存在しません。")
+            return False
+            
+        # タイトルと注釈に期間情報を追加
+        period_text = f'（最新{days}日間）'
+    else:
+        # 全期間を表示
+        filtered_df = df.copy()
+        period_text = '（全期間）'
     
     # グラフのスタイル設定
     plt.style.use('ggplot')
@@ -116,8 +134,8 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
     
     # 日付変更点（0時）を特定
     # 日付のみを抽出し、重複を削除して一意の日付リストを取得
-    df['日付'] = df['取得時間'].dt.date
-    unique_dates = df['日付'].unique()[1:]  # 最初の日付を除外（グラフの開始点）
+    filtered_df['日付'] = filtered_df['取得時間'].dt.date
+    unique_dates = filtered_df['日付'].unique()[1:]  # 最初の日付を除外（グラフの開始点）
     
     # 各日付の0時のタイムスタンプを生成
     midnight_timestamps = [pd.Timestamp(date).replace(hour=0, minute=0, second=0) for date in unique_dates]
@@ -129,7 +147,7 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
         ax1.axhspan(start, end, facecolor=rgba_color[:3], alpha=rgba_color[3], edgecolor='none')
     
     # AQI値の折れ線グラフ
-    ax1.plot(df['取得時間'], df['AQI値'], 
+    ax1.plot(filtered_df['取得時間'], filtered_df['AQI値'], 
              color=color_palette['AQI値'], 
              linewidth=1, 
              marker='o', 
@@ -141,14 +159,19 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
         ax1.axvline(x=timestamp, color='#333333', linestyle='-', linewidth=1, alpha=0.7)
     
     # フォントを明示的に指定
-    fig.suptitle('神戸市須磨区 大気質指数（AQI）および気象データの推移', fontsize=16, fontweight='bold', fontname='IPAexGothic')
+    fig.suptitle(f'神戸市須磨区 大気質指数（AQI）および気象データの推移{period_text}', fontsize=16, fontweight='bold', fontname='IPAexGothic')
     
     ax1.set_title('AQI値の推移', fontsize=14, fontweight='bold', fontname='IPAexGothic')
     ax1.set_ylabel('AQI値', fontsize=12, fontname='IPAexGothic')
-    ax1.set_ylim(0, max(df['AQI値'].dropna()) * 1.1 if not df['AQI値'].dropna().empty else 100)
+    ax1.set_ylim(0, max(filtered_df['AQI値'].dropna()) * 1.1 if not filtered_df['AQI値'].dropna().empty else 100)
     ax1.grid(True, linestyle='--', linewidth=0.5, color='gray', alpha=0.5)
     ax1.tick_params(axis='x', rotation=45, labelsize=10)
-    ax1.xaxis.set_major_locator(plt.MaxNLocator(8))
+    
+    # 表示する日付の目盛り数を調整
+    if days is not None:
+        ax1.xaxis.set_major_locator(plt.MaxNLocator(days+1))  # 日数+1の目盛り（始点と終点両方を表示）
+    else:
+        ax1.xaxis.set_major_locator(plt.MaxNLocator(8))  # 全期間の場合は8つの目盛り
     
     # 日付のフォーマットを調整
     plt.setp(ax1.get_xticklabels(), rotation=45, ha='right', fontname='IPAexGothic')
@@ -160,8 +183,8 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
     pollutants = ['PM2.5', 'PM10', 'O3', 'NO2']
     # 各汚染物質をプロット
     for pollutant in pollutants:
-        if pollutant in df.columns:
-            ax2.plot(df['取得時間'], df[pollutant], 
+        if pollutant in filtered_df.columns:
+            ax2.plot(filtered_df['取得時間'], filtered_df[pollutant], 
                     color=color_palette.get(pollutant, 'gray'), 
                     linewidth=1, 
                     marker='o', 
@@ -176,7 +199,12 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
     ax2.set_ylabel('濃度', fontsize=10, fontname='IPAexGothic')
     ax2.grid(True, linestyle='--', linewidth=0.5, color='gray', alpha=0.5)
     ax2.tick_params(axis='x', rotation=45, labelsize=10)
-    ax2.xaxis.set_major_locator(plt.MaxNLocator(8))
+    
+    # 表示する日付の目盛り数を調整
+    if days is not None:
+        ax2.xaxis.set_major_locator(plt.MaxNLocator(days+1))
+    else:
+        ax2.xaxis.set_major_locator(plt.MaxNLocator(8))
     
     # 日付のフォーマットを調整
     plt.setp(ax2.get_xticklabels(), rotation=45, ha='right', fontname='IPAexGothic')
@@ -199,23 +227,23 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
     
     # 左軸のデータをプロット
     for param in left_axis_data:
-        if param in df.columns and not df[param].dropna().empty:
+        if param in filtered_df.columns and not filtered_df[param].dropna().empty:
             has_left_data = True
-            ax3.plot(df['取得時間'], df[param], 
+            ax3.plot(filtered_df['取得時間'], filtered_df[param], 
                     color=color_palette.get(param, 'gray'), 
                     linewidth=1, 
                     marker='o', 
                     markersize=3,
                     label=param)
-            current_max = df[param].dropna().max()
+            current_max = filtered_df[param].dropna().max()
             if current_max > left_max:
                 left_max = current_max
     
     # 右軸のデータをプロット（気圧）
     has_right_data = False
-    if '気圧' in df.columns and not df['気圧'].dropna().empty:
+    if '気圧' in filtered_df.columns and not filtered_df['気圧'].dropna().empty:
         has_right_data = True
-        ax3_2.plot(df['取得時間'], df['気圧'], 
+        ax3_2.plot(filtered_df['取得時間'], filtered_df['気圧'], 
                  color=color_palette.get('気圧', 'purple'), 
                  linewidth=1, 
                  marker='o', 
@@ -223,9 +251,9 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
                  label='気圧')
         
         # 気圧のスケールを調整
-        pressure_mean = df['気圧'].dropna().mean()
+        pressure_mean = filtered_df['気圧'].dropna().mean()
         if not pd.isna(pressure_mean):
-            pressure_variance = max(30, df['気圧'].dropna().std() * 3)
+            pressure_variance = max(30, filtered_df['気圧'].dropna().std() * 3)
             ax3_2.set_ylim(pressure_mean - pressure_variance, pressure_mean + pressure_variance)
         ax3_2.set_ylabel('気圧 (hPa)', fontsize=10, fontname='IPAexGothic')
         ax3_2.tick_params(axis='y', labelcolor=color_palette.get('気圧', 'purple'))
@@ -243,7 +271,12 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
     
     ax3.grid(True, linestyle='--', linewidth=0.5, color='gray', alpha=0.5)
     ax3.tick_params(axis='x', rotation=45, labelsize=10)
-    ax3.xaxis.set_major_locator(plt.MaxNLocator(8))
+    
+    # 表示する日付の目盛り数を調整
+    if days is not None:
+        ax3.xaxis.set_major_locator(plt.MaxNLocator(days+1))
+    else:
+        ax3.xaxis.set_major_locator(plt.MaxNLocator(8))
     
     # 日付のフォーマットを調整
     plt.setp(ax3.get_xticklabels(), rotation=45, ha='right', fontname='IPAexGothic')
@@ -258,7 +291,7 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
     
     # データ生成時刻を追加
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    plt.figtext(0.5, 0.01, f'データ生成: {current_time}', 
+    plt.figtext(0.5, 0.01, f'データ生成: {current_time}{period_text}', 
                 ha='center', fontsize=8, fontname='IPAexGothic')
     
     # レイアウトの調整
@@ -269,31 +302,40 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
     plt.savefig(output_path, bbox_inches='tight')
     plt.close()
     
-    print(f"AQIデータの可視化が完了しました。出力先: {output_path}")
+    # 期間情報を含めたメッセージ
+    if days is not None:
+        print(f"最新{days}日間のAQIデータの可視化が完了しました。出力先: {output_path}")
+    else:
+        print(f"全期間のAQIデータの可視化が完了しました。出力先: {output_path}")
+    
+    return True
 
-def generate_graph(output_path):
+
+if __name__ == "__main__":
     """
-    メイン関数
+    全期間と最新N日分の両方のグラフを生成するメイン関数
+    
+    Args:
+        all_data_output_path (str): 全期間グラフの出力パス
+        recent_data_output_path (str): 最新N日分グラフの出力パス
+        days (int): 最新グラフに表示する日数（デフォルト: 5日）
+    
+    Returns:
+        tuple: (全期間グラフの生成結果, 最新N日分グラフの生成結果)
     """
     # CSVファイルのパス
     csv_path = os.path.join(DATA_DIR, 'kobe_aqi_data.csv')
+    all_data_output_path = os.path.join(DATA_DIR, 'aqi_graph_all.png')
+    recent_data_output_path = os.path.join(DATA_DIR, 'aqi_graph_recent.png')
     
-    
-    try:
-        # データの読み込みと前処理
-        df = load_and_preprocess_data(csv_path)
-        
-        # 可視化
-        create_aqi_visualization(df, output_path)
-        
-        return True
-        
-    except Exception as e:
-        print(f"エラーが発生しました: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
 
-if __name__ == "__main__":
-    output_path = os.path.join(DATA_DIR, 'aqi_graph.png')
-    generate_graph(output_path)
+    # データの読み込みと前処理
+    df = load_and_preprocess_data(csv_path)
+    
+    # 全期間グラフの生成
+    all_data_result = create_aqi_visualization(df, all_data_output_path, days=None)
+    
+    # 最新N日分のグラフの生成
+    recent_data_result = create_aqi_visualization(df, recent_data_output_path, days=5)
+    
+    print("すべてのグラフ生成が完了しました。")
