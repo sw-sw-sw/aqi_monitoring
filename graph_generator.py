@@ -157,8 +157,7 @@ def create_aqi_visualization(df, output_path='aqi_visualization.png'):
     ax1.legend(loc='upper left', prop={'family': 'IPAexGothic'})
     
     # 2. 汚染物質のグラフ作成
-    pollutants = ['PM2.5', 'O3']  # PM2.5とO3のみを表示
-
+    pollutants = ['PM2.5', 'PM10', 'O3', 'NO2']
     # 各汚染物質をプロット
     for pollutant in pollutants:
         if pollutant in df.columns:
@@ -296,5 +295,5 @@ def generate_graph(output_path):
         return False
 
 if __name__ == "__main__":
-    output_path = os.path.join(DATA_DIR, 'aqi_graph_test.png')
+    output_path = os.path.join(DATA_DIR, 'aqi_graph.png')
     generate_graph(output_path)
