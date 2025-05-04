@@ -29,6 +29,8 @@ CSV_FILE_PATH = os.path.join(DATA_DIR, "kobe_aqi_data.csv")
 CSV_FILE_PATH2 = os.path.join(ABOVE_PATH, "aqi_analysis/kobe_aqi_data.csv")
 HTML_OUTPUT_PATH = os.path.join(STATIC_DIR, "aqi_graph.html")
 LOG_FILE_PATH = os.path.join(LOG_DIR, "app.log")
+SUMA_LAT_LON =[34.64178340622669, 135.11472440241536]
+
 
 # スクレイピング設定
 SCRAPE_INTERVAL = 3600  # デフォルト: 1時間 (秒単位)
@@ -123,8 +125,3 @@ QWEN_MODEL_PRICING = {
         "特徴": "軽量でありながら高性能な視覚理解を提供するモデル"
     }
 }
-
-
-# テスト用の緯度経度
-SUMA_LAT_LON =[34.64178340622669, 135.11472440241536]
-

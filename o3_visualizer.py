@@ -16,7 +16,7 @@ df = pd.read_csv('data/kobe_aqi_data.csv')
 
 # 取得時間を日付型に変換
 df['取得時間'] = pd.to_datetime(df['取得時間'])
-df['日付'] = df['取得時間'].dt.dateP
+df['日付'] = df['取得時間'].dt.date
 
 # 日ごとのO3最大値を計算
 daily_o3_max = df.groupby('日付')['O3'].max().reset_index()
@@ -31,7 +31,7 @@ plt.axhline(y=50, color='red', linestyle='--', linewidth=2, label='閾値: 50')
 plt.fill_between(daily_o3_max['日付'], 0, 30, alpha=0.3, color='green', label='正常範囲 (0-30)')
 plt.fill_between(daily_o3_max['日付'], 30, 50, alpha=0.3, color='yellow', label='要注意範囲 (30-50)')
 plt.fill_between(daily_o3_max['日付'], 50, daily_o3_max['O3'].max(), 
-                 where=(daily_o3_max['O3P'] > 50), alpha=0.3, color='red', label='警戒範囲 (50+)')
+                 where=(daily_o3_max['O3'] > 50), alpha=0.3, color='red', label='警戒範囲 (50+)')
 plt.title('日最高O3濃度の時系列推移 (2025年4月〜5月)', fontsize=16, pad=20)
 plt.xlabel('日付', fontsize=14)
 plt.ylabel('O3濃度', fontsize=14)
@@ -39,7 +39,7 @@ plt.legend(fontsize=12)
 plt.grid(True, alpha=0.3)
 plt.xticks(rotation=45)
 plt.tight_layout()
-plt.show()
+plt.savefig('data/日最高O3濃度の時系列推移.png')
 
 # 図2: O3濃度の分布ヒストグラム
 plt.figure(figsize=(14, 8))
@@ -54,7 +54,7 @@ plt.legend(fontsize=12)
 plt.grid(True, axis='y', alpha=0.3)
 plt.xticks(bins)
 plt.tight_layout()
-plt.show()
+plt.savefig('data/日最高O3濃度の分布.png')
 
 # 図3: 月ごとの超過状況（円グラフと棒グラフの組み合わせ）
 df['月'] = df['取得時間'].dt.month
@@ -112,7 +112,7 @@ ax2.pie(sizes, labels=labels, colors=colors, autopct='', startangle=90,
 ax2.set_title('O3濃度レベル別の日数分布', fontsize=14)
 
 plt.tight_layout()
-plt.show()
+plt.savefig('data/O3濃度レベル別の日数分布.png')
 
 # 図4: 箱ひげ図（月ごとのO3濃度分布）
 plt.figure(figsize=(12, 8))
@@ -129,7 +129,7 @@ plt.title('月ごとのO3濃度分布（箱ひげ図）', fontsize=16, pad=20)
 plt.legend(fontsize=12)
 plt.grid(True, axis='y', alpha=0.3)
 plt.tight_layout()
-plt.show()
+plt.savefig('data/月ごとのO3濃度分布.png')
 
 # 数値サマリーの再表示（参考用）
 print("=== 分析結果サマリー ===")
