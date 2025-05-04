@@ -83,7 +83,7 @@ def generate_movie(input_dir, output_dir, output_file_name, time_stamp=True):
     # 出力ファイル名の設定（日付を追加） 
     # current_date = current_datetime.strftime("%Y-%m-%d")
     # output_filename = f"timelapse_{output_file_name}_{current_date}.mp4"
-    output_filename = f"timelapse_movie_{output_file_name}.mp4"
+    output_filename = f"{output_file_name}.mp4"
 
     output_path = os.path.join(output_dir, output_filename)
     
@@ -128,7 +128,7 @@ def generate_movie(input_dir, output_dir, output_file_name, time_stamp=True):
     return output_path
 
 if __name__ == "__main__":
-    AREA_NAME ="suma"
-    input_dir = os.path.join(IMAGE_CRAWLER_DIR, AREA_NAME)
+    file_name = 'timelasp_movie_suma'
+    input_dir = os.path.join(IMAGE_CRAWLER_DIR, "suma")
     output_dir = MOVIE_DIR
-    generate_movie(input_dir, output_dir, AREA_NAME, time_stamp=True)
+    generate_movie(input_dir, output_dir, file_name, time_stamp=True)
