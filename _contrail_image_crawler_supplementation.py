@@ -44,14 +44,18 @@ def generate_expected_timestamps(start_time, end_time, interval_minutes=1):
 
 def find_missing_files(existing_files, expected_timestamps):
     """欠損ファイルを特定する"""
+    # existing_filesはタプルのリストなので、タイムスタンプ部分だけを抽出
     existing_timestamps = [file[1] for file in existing_files]
     missing_timestamps = []
     
     for timestamp in expected_timestamps:
         # 00秒を付加して完全な形式に
-        timestamp_with_seconds = timestamp.replace(second=0)
-        if timestamp_with_seconds not in existing_timestamps:
-            missing_timestamps.append(timestamp_with_seconds)
+        if isinstance(timestamp, datetime):  # datetime型であることを確認
+            timestamp_with_seconds = timestamp.replace(second=0)
+            if timestamp_with_seconds not in existing_timestamps:
+                missing_timestamps.append(timestamp_with_seconds)
+        else:
+            print(f"無効なタイムスタンプ: {timestamp}")
     
     return missing_timestamps
 
@@ -264,23 +268,23 @@ def main():
     # 直近24時間の予想されるタイムスタンプのリストを生成
     # 最新ファイルの時刻から現在までの間にある可能性のあるファイルも含める
     start_time = max(newest_timestamp, time_limit)
-    expected_timestamps = generate_expected_timestamps(start_time, now)
+    recent_existing_files = [(f, ts) for f, ts in existing_files if ts >= time_limit]
     
-    print(f"24時間以内で期待されるファイル数: {len(expected_timestamps)}")
+    print(f"24時間以内で期待されるファイル数: {len(recent_existing_files)}")
     
     # 既存ファイルから24時間以内のものだけを抽出
     recent_existing_files = [(f, ts) for f, ts in existing_files if ts >= time_limit]
     print(f"24時間以内の既存ファイル数: {len(recent_existing_files)}")
     
     # 欠損ファイルを特定
-    missing_timestamps = find_missing_files(recent_existing_files, expected_timestamps)
+    missing_timestamps = find_missing_files(recent_existing_files, recent_existing_files)
     
     if not missing_timestamps:
         print("24時間以内の欠損ファイルはありません。")
         return
     
     print(f"24時間以内の欠損ファイル数: {len(missing_timestamps)}")
-    print(f"24時間以内の欠損率: {len(missing_timestamps) / len(expected_timestamps) * 100:.2f}%")
+    print(f"24時間以内の欠損率: {len(missing_timestamps) / len(recent_existing_files) * 100:.2f}%")
     
     # ダウンロード履歴の読み込み
     downloaded_history = load_downloaded_history(save_dir)
