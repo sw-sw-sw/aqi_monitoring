@@ -4,6 +4,8 @@ static/
 setup/
 utilities/
 key/
+data_bak/
+
 aqi_monitoring.egg-info
 *.pyc
 *.pyo
