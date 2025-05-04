@@ -204,7 +204,7 @@ correlation_data = pd.DataFrame({
 correlation_data.index = ['コントレイル検出数', 'AQI値', '時間帯パターン']
 
 # ヒートマップで表示
-if Falserue:
+if False:
     sns.heatmap(correlation_data, annot=True, cmap='coolwarm', vmin=-1, vmax=1)
     plt.title('相関係数ヒートマップ')
     plt.tight_layout()
