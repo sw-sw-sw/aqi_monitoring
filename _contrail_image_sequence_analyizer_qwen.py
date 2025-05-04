@@ -10,7 +10,7 @@ from PIL import Image, ImageDraw
 from dotenv import load_dotenv
 import os
 from config import *
-from _cloud_analyzer_qwen import QwenCloudAnalyzer, AnalysisManager
+from _contrail_analyzer_qwen import QwenCloudAnalyzer, AnalysisManager
 
 class EnhancedAnalysisManager(AnalysisManager):
     """飛行機雲分析と結果管理を行う拡張クラス - 完全な時系列記録に対応"""
