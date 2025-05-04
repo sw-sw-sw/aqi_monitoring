@@ -69,4 +69,4 @@ if __name__ == "__main__":
     save_dir = os.path.join(IMAGE_CRAWLER_DIR, AREA_DIR)
     timestamp = datetime.now() - timedelta(minutes=10) # 10 minutes ago
 
-    download_image(URL, save_dir, timestamp)
+    download_crawl_image(URL, save_dir, timestamp)

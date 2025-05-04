@@ -125,3 +125,54 @@ QWEN_MODEL_PRICING = {
         "特徴": "軽量でありながら高性能な視覚理解を提供するモデル"
     }
 }
+HEADERS_COLLECTION = {
+    # 一般的なWindowsのChromeブラウザ
+    "windows_chrome": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+        "Referer": "https://weathernews.jp/onebox/livecam/kinki/hyogo/7CDDE906BA8F/",
+        "Accept": "image/avif,image/webp,image/apng,image/*,*/*;q=0.8",
+        "Accept-Language": "ja,en-US;q=0.9,en;q=0.8",
+        "Cache-Control": "no-cache",
+        "Pragma": "no-cache"
+    },
+    
+    # MacのSafariブラウザ
+    "mac_safari": {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Safari/605.1.15",
+        "Referer": "https://weathernews.jp/onebox/",
+        "Accept": "image/png,image/svg+xml,image/*;q=0.8,video/*;q=0.8,*/*;q=0.5",
+        "Accept-Language": "ja-jp",
+        "Cache-Control": "max-age=0",
+        "Connection": "keep-alive"
+    },
+    
+    # iPhoneのSafariブラウザ
+    "iphone_safari": {
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1",
+        "Referer": "https://weathernews.jp/",
+        "Accept": "image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5",
+        "Accept-Language": "ja-jp",
+        "Connection": "keep-alive",
+        "Pragma": "no-cache"
+    },
+    
+    # Androidのモバイルブラウザ
+    "android_chrome": {
+        "User-Agent": "Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.91 Mobile Safari/537.36",
+        "Referer": "https://weathernews.jp/onebox/livecam/kinki/hyogo/7CDDE906BA8F/",
+        "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
+        "Accept-Language": "ja,en;q=0.9",
+        "Cache-Control": "no-cache",
+        "Connection": "keep-alive"
+    },
+    
+    # Firefoxブラウザ
+    "firefox": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+        "Referer": "https://weathernews.jp/onebox/livecam/",
+        "Accept": "image/webp,*/*",
+        "Accept-Language": "ja,en-US;q=0.7,en;q=0.3",
+        "Cache-Control": "max-age=0",
+        "DNT": "1"
+    }
+}
