@@ -7,6 +7,11 @@ df = pd.read_csv('data/kobe_aqi_data.csv')
 # 取得時間を日付型に変換
 df['取得時間'] = pd.to_datetime(df['取得時間'])
 
+# 欠損値を処理（例: 0で埋める、または欠損行を削除）
+df['O3'] = df['O3'].fillna(0)  # 欠損値を0で埋める場合
+# または
+# df = df.dropna(subset=['O3'])  # 欠損値を含む行を削除する場合
+
 # 1. まず日付単位での分析
 df['日付'] = df['取得時間'].dt.date
 
