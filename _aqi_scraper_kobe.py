@@ -19,6 +19,11 @@ API_TOKEN = os.getenv('AQI_API_TOKEN')  # api_token.pyからインポート
 def fetch_aqi_data():
     """神戸市須磨区の大気質データをAPIから取得する関数"""
     try:
+        # トークンが設定されているか確認
+        if not API_TOKEN:
+            logger.error("APIトークンが設定されていません")
+            return None
+
         # 須磨区の地点を取得するためのURL
         # 地点名で検索する方法
         url = f"{API_BASE_URL}/feed/japan/kobeshisumaku/suma/?token={API_TOKEN}"
@@ -58,11 +63,16 @@ def fetch_aqi_data():
             
         # 結果を整形
         result = parse_api_response(data)
-        
-        # csvに保存
+        if not result:
+            logger.error("APIレスポンスの解析に失敗しました")
+            return None
+
+        # CSVに保存
         logger.info("データをCSVに保存しています...")
-        save_result = save_to_csv(data, CSV_FILE_PATH)
-        # save_to_csv(data, CSV_FILE_PATH2)
+        if not save_to_csv(result, CSV_FILE_PATH):
+            logger.error("データの保存に失敗しました")
+            return None
+
         return result
         
     except Exception as e:
