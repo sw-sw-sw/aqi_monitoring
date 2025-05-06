@@ -5,11 +5,16 @@ from datetime import datetime
 from _aqi_graph_generator import create_aqi_visualization
 from config import *
 import _aqi_scraper_kobe 
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
 def main():
     """
     メイン実行関数 - データの取得、保存、グラフ生成を行います
     """
+
     # 開始時間の記録
     start_time = datetime.now()
     logger.info("==== スケジューラによるデータ更新を開始します ====")
@@ -48,12 +53,12 @@ def draw_graph():
     else:
         logger.error("グラフの更新に失敗しました")     
     # latest N days graph
-    recent_data_result = create_aqi_visualization(df, recent_data_output_path, days=5)
+    recent_data_result = create_aqi_visualization(csv_file_path, recent_data_output_path, days=5)
     if recent_data_result:
         logger.info("すべての処理が完了しました")
     else:
         logger.error("グラフの更新に失敗しました")
     
 if __name__ == "__main__":
-    get_aqi_data()
+    main()
     print("すべての処理が完了しました")
