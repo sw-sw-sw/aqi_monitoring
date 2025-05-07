@@ -17,6 +17,8 @@ __pycache__/
 data/*
 !data/kobe_aqi_data.csv
 
+!data/o3_google_api_1month
+
 google_aqi_api_test.html
 
 **/CLAUDE.local.md

@@ -26,12 +26,13 @@ def fetch_aqi_data():
 
         # 須磨区の地点を取得するためのURL
         # 地点名で検索する方法
-        url = f"{API_BASE_URL}/feed/japan/kobeshisumaku/suma/?token={API_TOKEN}"
+        # url = f"{API_BASE_URL}/feed/japan/kobeshisumaku/suma/?token={API_TOKEN}"
+        url = f"{API_BASE_URL}/feed/geo:34.64375093046715;135.10933036233058/?token={API_TOKEN}"
         
         # 代替方法: 地理座標を使用（須磨区の緯度経度を使用）
         # Suma Ward, Kobe coordinates: 約 34.65, 135.13
         # url = f"{API_BASE_URL}/feed/geo:34.65;135.13/?token={API_TOKEN}"
-        
+        # 自宅　34.64375093046715, 135.10933036233058
         logger.info(f"APIリクエストを送信: {url.replace(API_TOKEN, '***')}")
         
         # APIリクエストを送信

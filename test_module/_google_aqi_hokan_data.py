@@ -43,6 +43,16 @@ def fetch_aqi_historical_data(start_time_str, end_time_str):
     print(f"\n指定された期間の大気質データを取得します。")
     print(f"取得期間: {start_time.strftime('%Y-%m-%d %H:%M:%S')} から {end_time.strftime('%Y-%m-%d %H:%M:%S')}")
     
+    # 現在時刻を取得
+    now = datetime.now()
+    
+    # 30日より前のデータは取得できないため、開始時間を制限
+    earliest_available_time = now - timedelta(days=30)
+    if start_time < earliest_available_time:
+        print(f"警告: APIの制限により30日より前のデータは取得できません。")
+        print(f"開始時間を {earliest_available_time.strftime('%Y-%m-%d %H:%M:%S')} に調整します。")
+        start_time = earliest_available_time
+    
     # 既存のCSVファイルが存在するか確認
     existing_datetimes = set()
     existing_data = []
@@ -74,7 +84,10 @@ def fetch_aqi_historical_data(start_time_str, end_time_str):
     current_date = start_time.date()
     end_date = end_time.date()
     
-    while current_date <= end_date:
+    # 古い方から処理するように変更
+    date_range = [(current_date + timedelta(days=i)) for i in range((end_date - current_date).days + 1)]
+    
+    for current_date in date_range:  # 日付のリストを順番に処理
         # 各日の開始時刻と終了時刻を計算
         if current_date == start_time.date():
             day_start = start_time
@@ -86,152 +99,54 @@ def fetch_aqi_historical_data(start_time_str, end_time_str):
         else:
             day_end = datetime.combine(current_date, datetime.max.time())
         
-        # 現在時刻から48時間以内のデータか確認
-        now = datetime.now()
-        is_recent = (now - day_end).total_seconds() <= 48 * 3600
-        
         print(f"日付: {current_date.strftime('%Y-%m-%d')} のデータを取得中...")
         print(f"  期間: {day_start.strftime('%H:%M:%S')} から {day_end.strftime('%H:%M:%S')}")
-        print(f"  APIメソッド: {'currentConditions' if is_recent else 'history'}")
-        
-        # 開始時刻と終了時刻をISOフォーマットに変換
-        day_start_iso = day_start.isoformat() + "Z"
-        day_end_iso = day_end.isoformat() + "Z"
         
         day_data = []
         
-        # 48時間以内のデータもhistory APIを使って取得する
-        if is_recent:
-            # 1時間ごとに処理
-            current_hour = day_start.replace(minute=0, second=0, microsecond=0)
-            while current_hour <= day_end:
-                formatted_date_time = current_hour.strftime('%Y-%m-%d %H:%M:%S')
+        # 1時間ずつデータを取得
+        for current_hour in range(24):  # 各日の24時間を処理
+            # 現在の時間を計算
+            if current_date == start_time.date() and current_hour < day_start.hour:
+                continue  # 開始時間より前の時間はスキップ
+            if current_date == end_date and current_hour > day_end.hour:
+                continue  # 終了時間より後の時間はスキップ
                 
-                # 既に取得済みのデータはスキップ
-                if formatted_date_time in existing_datetimes:
-                    current_hour += timedelta(hours=1)
-                    continue
+            hour_start = datetime.combine(current_date, datetime.min.time()) + timedelta(hours=current_hour)
+            hour_end = hour_start + timedelta(hours=1)
+            
+            # 日付制限を確認
+            if hour_start < day_start:
+                hour_start = day_start
+            if hour_end > day_end:
+                hour_end = day_end
                 
-                print(f"  時刻: {formatted_date_time} のデータを取得中...")
+            # 時間が範囲外の場合はスキップ
+            if hour_end <= hour_start:
+                continue
                 
-                # リクエストボディ - 最新データもhistory APIを使用
-                payload = {
-                    "location": {
-                        "latitude": LATITUDE,
-                        "longitude": LONGITUDE
-                    },
-                    "period": {
-                        # 1時間の範囲を指定
-                        "startTime": current_hour.isoformat() + "Z",
-                        "endTime": (current_hour + timedelta(hours=1)).isoformat() + "Z"
-                    },
-                    "universalAqi": True,
-                    "extraComputations": [
-                        "HEALTH_RECOMMENDATIONS",
-                        "DOMINANT_POLLUTANT_CONCENTRATION",
-                        "POLLUTANT_CONCENTRATION",
-                        "LOCAL_AQI",
-                        "POLLUTANT_ADDITIONAL_INFO"
-                    ],
-                    "languageCode": "ja",
-                    "pageSize": 1  # 1時間分のデータのみ
-                }
+            # 開始時刻と終了時刻をISOフォーマットに変換
+            hour_start_iso = hour_start.isoformat() + "Z"
+            hour_end_iso = hour_end.isoformat() + "Z"
+            
+            formatted_hour_time = hour_start.strftime('%Y-%m-%d %H:%M:%S')
+            
+            # 既に取得済みのデータはスキップ
+            if formatted_hour_time in existing_datetimes:
+                print(f"  {formatted_hour_time} のデータは既に取得済みのためスキップします。")
+                continue
                 
-                try:
-                    # APIリクエストを送信 - history APIを使用
-                    response = requests.post(history_url, headers=headers, data=json.dumps(payload))
-                    
-                    # レスポンスを処理
-                    if response.status_code == 200:
-                        data = response.json()
-                        
-                        # AQIインデックス情報
-                        aqi_value = "N/A"
-                        aqi_category = "N/A"
-                        dominant_pollutant = "N/A"
-                        
-                        for index in data.get("indexes", []):
-                            if index.get("code", "").lower() == "uaqi":  # Universal AQI
-                                aqi_value = index.get("aqi", "N/A")
-                                aqi_category = index.get("category", "N/A")
-                                dominant_pollutant = index.get("dominantPollutant", "N/A")
-                        
-                        # 汚染物質の詳細
-                        pm25_value = "N/A"
-                        pm10_value = "N/A"
-                        o3_value = "N/A"
-                        no2_value = "N/A"
-                        
-                        for pollutant in data.get("pollutants", []):
-                            code = pollutant.get("code", "").lower()
-                            concentration = pollutant.get("concentration", {}).get("value", "N/A")
-                            
-                            if code == "pm25":
-                                pm25_value = concentration
-                            elif code == "pm10":
-                                pm10_value = concentration
-                            elif code == "o3":
-                                o3_value = concentration
-                            elif code == "no2":
-                                no2_value = concentration
-                        
-                        # 気象データ（APIには含まれていないため、模擬的なデータを使用）
-                        temperature = round(20 + (5 * (0.5 - (current_hour.hour % 24) / 24)), 1)  # 15〜25度の間で変動
-                        humidity = round(50 + (20 * (0.5 - (current_hour.hour % 12) / 12)), 1)  # 30〜70%の間で変動
-                        pressure = round(1013 + (5 * (0.5 - (current_hour.day % 3) / 3)), 1)  # 1008〜1018hPaの間で変動
-                        wind_speed = round(2 + (3 * (0.5 - (current_hour.hour % 8) / 8)), 1)  # 0〜5m/sの間で変動
-                        precipitation = 0.0  # 降水量は基本的に0とする
-                        
-                        # 特定の日時には雨を降らせる（サンプルとして）
-                        if current_hour.hour in [4, 5, 6, 7] and current_hour.day % 2 == 1:
-                            precipitation = round((current_hour.hour - 3) * 0.5, 1)  # 0.5〜2.0mmの間で変動
-                        
-                        # CSVの1行分のデータを作成
-                        row = [
-                            LOCATION_NAME,
-                            formatted_date_time,
-                            aqi_value,
-                            aqi_category,
-                            dominant_pollutant,
-                            pm25_value,
-                            pm10_value,
-                            o3_value,
-                            no2_value,
-                            temperature,
-                            humidity,
-                            pressure,
-                            wind_speed,
-                            precipitation
-                        ]
-                        
-                        day_data.append(row)
-                        new_data.append(row)
-                        existing_datetimes.add(formatted_date_time)  # 取得済みデータに追加
-                        
-                    else:
-                        print(f"    エラーが発生しました。ステータスコード: {response.status_code}")
-                        print(f"    エラー詳細: {response.text}")
-                
-                except Exception as e:
-                    print(f"    データ取得中にエラーが発生しました: {str(e)}")
-                
-                # APIレート制限を回避するために少し待機
-                time.sleep(1)
-                
-                # 次の時間に進む
-                current_hour += timedelta(hours=1)
-        
-        # 48時間以上前のデータはhistory APIを使用
-        else:
-            # リクエストボディ
+            print(f"  {formatted_hour_time} のデータを取得中...")
+            
+            # リクエストボディを作成 - 1時間単位で指定
             payload = {
                 "location": {
                     "latitude": LATITUDE,
                     "longitude": LONGITUDE
                 },
                 "period": {
-                    "startTime": day_start_iso,
-                    "endTime": day_end_iso
+                    "startTime": hour_start_iso,
+                    "endTime": hour_end_iso
                 },
                 "universalAqi": True,
                 "extraComputations": [
@@ -242,17 +157,13 @@ def fetch_aqi_historical_data(start_time_str, end_time_str):
                     "POLLUTANT_ADDITIONAL_INFO"
                 ],
                 "languageCode": "ja",
-                "pageSize": 24  # 一度に取得するデータ数（最大24時間分）
+                "pageSize": 1  # 1時間分のデータのみ取得
             }
             
-            # APIリクエストを送信
-            page_token = None
+            # APIリクエスト処理
             retry_count = 0
             
             while True:
-                if page_token:
-                    payload["pageToken"] = page_token
-                
                 try:
                     # APIリクエストを送信
                     response = requests.post(history_url, headers=headers, data=json.dumps(payload))
@@ -263,7 +174,7 @@ def fetch_aqi_historical_data(start_time_str, end_time_str):
                         
                         # データが空の場合
                         if not data.get("hoursInfo"):
-                            print(f"  警告: {current_date.strftime('%Y-%m-%d')}のデータが見つかりませんでした。")
+                            print(f"  警告: {formatted_hour_time}のデータが見つかりませんでした。")
                             break
                         
                         # 各時間のデータを処理
@@ -277,17 +188,9 @@ def fetch_aqi_historical_data(start_time_str, end_time_str):
                             except:
                                 formatted_date_time = date_time
                             
-                            # 既に取得済みのデータはスキップ
+                            # 既に取得済みのデータはスキップ（念のため再確認）
                             if formatted_date_time in existing_datetimes:
                                 continue
-                            
-                            # 指定範囲外のデータはスキップ
-                            try:
-                                dt_obj = datetime.strptime(formatted_date_time, '%Y-%m-%d %H:%M:%S')
-                                if dt_obj < day_start or dt_obj > day_end:
-                                    continue
-                            except:
-                                pass
                             
                             # AQIインデックス情報
                             aqi_value = "N/A"
@@ -319,7 +222,7 @@ def fetch_aqi_historical_data(start_time_str, end_time_str):
                                 elif code == "no2":
                                     no2_value = concentration
                             
-                            # 気象データ（APIには含まれていないため、ダミーデータを使用）
+                            # 気象データ（APIには含まれていないため、模擬的なデータを使用）
                             dt_obj = dt_obj.replace(tzinfo=None)  # タイムゾーン情報を削除
                             temperature = round(20 + (5 * (0.5 - (dt_obj.hour % 24) / 24)), 1)  # 15〜25度の間で変動
                             humidity = round(50 + (20 * (0.5 - (dt_obj.hour % 12) / 12)), 1)  # 30〜70%の間で変動
@@ -355,24 +258,17 @@ def fetch_aqi_historical_data(start_time_str, end_time_str):
                                 new_data.append(row)
                                 existing_datetimes.add(formatted_date_time)  # 取得済みデータに追加
                         
-                        # 次のページトークンがあれば保存
-                        page_token = data.get("nextPageToken")
-                        
-                        # 次のページトークンがなければ終了
-                        if not page_token:
-                            break
-                        
-                        # APIレート制限を回避するために少し待機
-                        time.sleep(0.5)
+                        # 処理完了したらループを抜ける
+                        break
                     
                     else:
                         print(f"  エラーが発生しました。ステータスコード: {response.status_code}")
                         print(f"  エラー詳細: {response.text}")
                         
-                        # APIのレスポンスが3回連続で失敗したら、この日をスキップ
+                        # APIのレスポンスが3回連続で失敗したら、この時間をスキップ
                         retry_count += 1
                         if retry_count >= 3:
-                            print(f"  3回連続でエラーが発生したため、{current_date.strftime('%Y-%m-%d')}の取得をスキップします。")
+                            print(f"  3回連続でエラーが発生したため、{formatted_hour_time}の取得をスキップします。")
                             break
                         
                         # 1分間待機してから再試行
@@ -383,29 +279,25 @@ def fetch_aqi_historical_data(start_time_str, end_time_str):
                 except Exception as e:
                     print(f"  データ取得中にエラーが発生しました: {str(e)}")
                     
-                    # APIのレスポンスが3回連続で失敗したら、この日をスキップ
+                    # APIのレスポンスが3回連続で失敗したら、この時間をスキップ
                     retry_count += 1
                     if retry_count >= 3:
-                        print(f"  3回連続でエラーが発生したため、{current_date.strftime('%Y-%m-%d')}の取得をスキップします。")
+                        print(f"  3回連続でエラーが発生したため、{formatted_hour_time}の取得をスキップします。")
                         break
                     
                     # 1分間待機してから再試行
                     print("  1分間待機してから再試行します...")
                     time.sleep(60)
                     continue
+                
+            # APIレート制限を回避するために少し待機
+            time.sleep(0.5)
         
         print(f"  {current_date.strftime('%Y-%m-%d')}のデータを{len(day_data)}時間分新たに取得しました。")
         
         # 日ごとにCSVに保存する（途中で異常終了した場合のため）
         if day_data:
             save_to_csv(day_data, CSV_FILENAME, CSV_HEADERS, mode='a', file_exists=len(existing_data) > 0 or current_date > start_time.date())
-        
-        # 次の日に進む
-        current_date += timedelta(days=1)
-        
-        # 日ごとのデータ取得間に少し待機（APIレート制限対策）
-        if current_date <= end_date:
-            time.sleep(2)
     
     # 取得したデータをソートしてCSVに保存
     sort_and_save_data(CSV_FILENAME)
