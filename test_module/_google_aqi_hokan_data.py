@@ -60,7 +60,7 @@ def fetch_aqi_historical_data(start_time_str, end_time_str):
             print("新しいCSVファイルとして処理を続行します。")
     
     # history APIエンドポイント
-    url = f'https://airquality.googleapis.com/v1/history:lookup?key={API_KEY}'
+    history_url = f'https://airquality.googleapis.com/v1/history:lookup?key={API_KEY}'
     
     # ヘッダー
     headers = {
