@@ -94,7 +94,7 @@ class QwenCloudAnalyzer(ImageAnalyzer):
     
     def __init__(self, api_key: str, 
                  model: str = "qwen2.5-vl-7b-instruct", 
-                 resize_dimensions: Tuple[int, int] = (320, 180),
+                 resize_dimensions: Tuple[int, int] = (640, 360),
                  base_url: str = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"):
         """
         初期化
