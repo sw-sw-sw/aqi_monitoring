@@ -65,8 +65,8 @@ def download_crawl_image(url,save_dir, timestamp):
 if __name__ == "__main__":
     # setting
     URL ='https://weathernews.jp/onebox/livecam/kinki/hyogo/7CDDE906BA8F/'
-    AREA_DIR = 'suma'
-    save_dir = os.path.join(IMAGE_CRAWLER_DIR, AREA_DIR)
+    
+    save_dir = os.path.join(IMAGE_ANALYSIS_DIR, "suma/input_image")
     timestamp = datetime.now() - timedelta(minutes=10) # 10 minutes ago
 
     download_crawl_image(URL, save_dir, timestamp)

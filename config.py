@@ -12,7 +12,7 @@ DATA_BAK_DIR = os.path.join(PROJECT_ROOT, "data_bak")
 
 
 IMAGE_ANALYSIS_DIR = os.path.join(DATA_DIR, "image_analysis")
-IMAGE_CRAWLER_DIR = os.path.join(DATA_DIR, "image_crawler_data")
+
 MOVIE_DIR = os.path.join(DATA_DIR, "movies")
 IMAGE_WEB_URL_DIR = os.path.join(DATA_DIR, "image_web_urls")
 
@@ -21,7 +21,7 @@ os.makedirs(STATIC_DIR, exist_ok=True)
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(IMAGE_ANALYSIS_DIR, exist_ok=True)
-os.makedirs(IMAGE_CRAWLER_DIR, exist_ok=True)
+
 os.makedirs(MOVIE_DIR, exist_ok=True)
 os.makedirs(IMAGE_WEB_URL_DIR, exist_ok=True)
 

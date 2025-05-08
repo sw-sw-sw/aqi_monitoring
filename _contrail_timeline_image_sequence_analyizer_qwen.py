@@ -168,11 +168,11 @@ def main():
     api_key = os.getenv("DASHSCOPE_API_KEY")
     
     # パスの設定
-    INPUT_DIR = "/home/sw/aqi_monitoring/data/image_crawler_data/suma"
-    # INPUT_DIR = os.path.join(IMAGE_ANALYSIS_DIR, "input")
+    # INPUT_DIR = "/home/sw/aqi_monitoring/data/image_crawler_data/suma"
+    INPUT_DIR = os.path.join(IMAGE_ANALYSIS_DIR, "suma/input_image")
 
-    OUTPUT_DIR = "/home/sw/aqi_monitoring/data"
-    OUTPUT_IMG_DIR = "/home/sw/aqi_monitoring/data/image_analysis/output_img_path"
+    OUTPUT_DIR = os.path.join(IMAGE_ANALYSIS_DIR, "suma")
+    OUTPUT_IMG_DIR = os.path.join(IMAGE_ANALYSIS_DIR, "suma/output_image")
     
     if not api_key:
         print("エラー: DASHSCOPE_API_KEYが設定されていません。")

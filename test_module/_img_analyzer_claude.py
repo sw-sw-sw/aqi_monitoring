@@ -295,9 +295,9 @@ def _print_single_contrail_analysis(data, image_path=None):
     print("\n" + "=" * 50)
    
 if __name__ == "__main__":
-    input_dir = os.path.join(IMAGE_ANALYSIS_DIR, "input")
+    input_dir = os.path.join(IMAGE_ANALYSIS_DIR, "test/input_image")
     print(f"input_dir: {input_dir}")
-    output_dir = os.path.join(IMAGE_ANALYSIS_DIR, "output")
+    output_dir = os.path.join(IMAGE_ANALYSIS_DIR, "test")
     print(f"output_dir: {output_dir}")
     main(input_dir, output_dir)
     print("すべての処理が完了しました")
