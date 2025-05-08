@@ -8,19 +8,19 @@ import seaborn as sns
 from scipy import stats
 import warnings
 import os
-
+from config import *
 # ディレクトリとファイル名の設定
 # 更新や再利用の便宜のため、パスを明示的に定義
-DATA_DIR = 'data'
-input_file_name = 'contrail_timeline_by_qwen.csv'  # 入力ファイル名
-output_file_name = 'contrail_pm25_hourly_contrail_counts.csv'  # 出力ファイル名
-INPUT_FILE_PATH = os.path.join(DATA_DIR, input_file_name)
-OUTPUT_FILE_PATH = os.path.join(DATA_DIR, output_file_name)
+
+input_file_name = 'suma/contrail_timeline_by_qwen.csv'  # 入力ファイル名
+output_file_name = 'suma/contrail_pm25_hourly_contrail_counts.csv'  # 出力ファイル名
+INPUT_FILE_PATH = os.path.join(IMAGE_ANALYSIS_DIR, input_file_name)
+OUTPUT_FILE_PATH = os.path.join(IMAGE_ANALYSIS_DIR, output_file_name)
 
 # 可視化出力ファイルのパス
-CORRELATION_PLOT_PATH = os.path.join(DATA_DIR, 'contrail_pm25_correlation.png')
-HOURLY_PATTERNS_PATH = os.path.join(DATA_DIR, 'contrail_pm25_hourly_patterns.png')
-HEATMAP_PATH = os.path.join(DATA_DIR, 'contrail_pm25_correlation_heatmap.png')
+CORRELATION_PLOT_PATH = os.path.join(IMAGE_ANALYSIS_DIR, 'suma/contrail_pm25_correlation.png')
+HOURLY_PATTERNS_PATH = os.path.join(IMAGE_ANALYSIS_DIR, 'suma/contrail_pm25_hourly_patterns.png')
+HEATMAP_PATH = os.path.join(IMAGE_ANALYSIS_DIR, 'suma/contrail_pm25_correlation_heatmap.png')
 
 # AQIデータファイルパス
 AQI_DATA_PATH = os.path.join(DATA_DIR, 'kobe_aqi_data.csv')

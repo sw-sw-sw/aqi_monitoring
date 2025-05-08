@@ -7,10 +7,10 @@ import japanize_matplotlib  # 日本語表示のため
 from config import *
 import os
 
-input_file_name = 'contrail_timeline_by_qwen.csv'
-output_file_name = 'contrail_hourly_counts.csv'
-INPUT_FILE_PATH = os.path.join(DATA_DIR, input_file_name)
-OUTPUT_FILE_PATH = os.path.join(DATA_DIR, output_file_name)
+input_file_name = 'suma/contrail_timeline_by_qwen.csv'
+output_file_name = 'suma/contrail_hourly_counts.csv'
+INPUT_FILE_PATH = os.path.join(IMAGE_ANALYSIS_DIR, input_file_name)
+OUTPUT_FILE_PATH = os.path.join(IMAGE_ANALYSIS_DIR, output_file_name)
 
 
 # CSVデータを読み込む
