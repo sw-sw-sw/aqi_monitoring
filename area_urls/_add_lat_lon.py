@@ -1,7 +1,7 @@
 import csv, os
 from config import *
 # geocoding_module からの import を google_geocording_module からの import に変更
-from area_urls.google_geocording_module import geocode
+from area_urls._google_geocording_module import geocode
 
 def add_lat_lon_to_csv(input_file, output_file, failed_output_file=None, verbose=True):
     """
@@ -232,8 +232,9 @@ def save_failed_addresses(failed_addresses, output_file, verbose=True):
     if verbose:
         print(f"{len(failed_addresses)}件の失敗した住所を {output_file} に保存しました。")
 
-if __name__ == "__main__":
-    input_dir = os.path.join(DATA_DIR, "image_web_urls")
+
+def main():
+    input_dir = os.path.join(PROJECT_ROOT, "area_urls")
     input_csv_path = os.path.join(input_dir, "livecam_links.csv")
     output_csv_path = os.path.join(input_dir, "livecam_links_with_lat_lon.csv")
     failed_csv_path = os.path.join(input_dir, "failed_geocoding_addresses.csv")
@@ -247,3 +248,6 @@ if __name__ == "__main__":
     failed_after_retry = retry_lat_lon_for_missing_data(output_csv_path, failed_csv_path)
     print(f"{output_csv_path} の再試行プロセスが完了しました。")
     print(f"再試行後も {len(failed_after_retry)} 件の住所で緯度経度の取得に失敗しました。")
+    
+if __name__ == "__main__":
+    main()

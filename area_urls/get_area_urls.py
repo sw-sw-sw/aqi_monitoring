@@ -7,7 +7,8 @@ import csv
 import re
 import os
 import time
-from config import DATA_DIR
+from config import *
+import _add_lat_lon 
 
 BASE_URL = "https://weathernews.jp/onebox/livecam/"
 HEADERS = {'User-Agent': 'Mozilla/5.0'}
@@ -117,7 +118,7 @@ def save_to_csv(data, filename="livecam_links.csv"):
 
 if __name__ == "__main__":
     print("全国のライブカメラリンクを収集中...")
-    SAVE_DIR = os.path.join(DATA_DIR, "image_urls")
+    SAVE_DIR = os.path.join(PROJECT_ROOT, "area_urls")
     filename= os.path.join(SAVE_DIR,"livecam_links.csv")
     all_links = scrape_all()
     save_to_csv(all_links, filename)

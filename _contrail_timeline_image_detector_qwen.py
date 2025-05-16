@@ -4,7 +4,8 @@ import glob
 import json
 import re
 import csv
-import shutil  # <-- この import が抜けていました！
+import shutil
+import os.path
 from datetime import datetime
 from PIL import Image, ImageDraw
 from dotenv import load_dotenv
@@ -13,7 +14,7 @@ from config import *
 from _contrail_analyzer_qwen import QwenCloudAnalyzer, AnalysisManager
 
 class EnhancedAnalysisManager(AnalysisManager):
-    """飛行機雲分析と結果管理を行う拡張クラス - 完全な時系列記録に対応"""
+    """飛行機雲分析と結果管理を行う拡張クラス - 完全な時系列記録と重複回避機能に対応"""
     
     def __init__(self, analyzer, input_dir, output_dir, output_img_dir):
         super().__init__(analyzer, input_dir, output_dir)
@@ -21,18 +22,69 @@ class EnhancedAnalysisManager(AnalysisManager):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         self.csv_file_path = os.path.join(output_dir, f"contrail_timeline_by_qwen_{timestamp}.csv")
         
+        # 既存のCSVファイルがあるかチェック（タイムスタンプなしのファイル名で）
+        self.base_csv_path = os.path.join(output_dir, "contrail_timeline_by_qwen.csv")
+        
         # 出力画像ディレクトリを作成
         os.makedirs(output_img_dir, exist_ok=True)
+        
+        # 既に処理済みの画像リストを取得
+        self.processed_images = self._get_processed_images()
         
         # CSVファイルが存在しない場合、ヘッダーを作成
         self._initialize_csv()
     
     def _initialize_csv(self):
         """CSVファイルを初期化（存在しない場合はヘッダーを作成）"""
+        # 新しいタイムスタンプ付きCSVファイルを作成
         if not os.path.exists(self.csv_file_path):
             with open(self.csv_file_path, "w", newline="") as f:
                 writer = csv.writer(f)
-                writer.writerow(["date", "contrail_count"])
+                writer.writerow(["date", "contrail_count", "image_path"])
+            
+        # ベースCSVファイルを作成または既存のものを更新
+        if not os.path.exists(self.base_csv_path):
+            with open(self.base_csv_path, "w", newline="") as f:
+                writer = csv.writer(f)
+                writer.writerow(["date", "contrail_count", "image_path"])
+        
+        # 既存のベースCSVから新しいCSVにデータをコピー（重複なし）
+        if os.path.exists(self.base_csv_path) and self.base_csv_path != self.csv_file_path:
+            # 両方のCSVファイルが異なる場合のみコピー
+            try:
+                existing_data = []
+                with open(self.base_csv_path, "r", newline="") as src:
+                    reader = csv.reader(src)
+                    next(reader)  # ヘッダーをスキップ
+                    existing_data = list(reader)
+                
+                if existing_data:
+                    with open(self.csv_file_path, "a", newline="") as dst:
+                        writer = csv.writer(dst)
+                        writer.writerows(existing_data)
+                        
+                    print(f"{len(existing_data)}件の既存データを新しいCSVファイルにコピーしました。")
+            except Exception as e:
+                print(f"既存データのコピー中にエラーが発生しました: {e}")
+    
+    def _get_processed_images(self):
+        """既に処理済みの画像パスのセットを返す"""
+        processed = set()
+        
+        if os.path.exists(self.base_csv_path):
+            try:
+                with open(self.base_csv_path, "r", newline="") as f:
+                    reader = csv.reader(f)
+                    next(reader)  # ヘッダーをスキップ
+                    for row in reader:
+                        if len(row) >= 3:  # image_pathが含まれている場合
+                            processed.add(row[2])  # 画像パスを追加
+                
+                print(f"既に処理済みの画像が{len(processed)}件見つかりました。")
+            except Exception as e:
+                print(f"処理済み画像の読み込み中にエラーが発生しました: {e}")
+        
+        return processed
     
     def _extract_date_from_filename(self, filepath):
         """ファイル名から日付を抽出（例: 20250429130900.jpg => 20250429130900）"""
@@ -41,11 +93,20 @@ class EnhancedAnalysisManager(AnalysisManager):
         date_match = re.search(r'\d{14}', filename)
         return date_match.group(0) if date_match else None
     
-    def _add_to_csv(self, date, contrail_count):
+    def _add_to_csv(self, date, contrail_count, image_path):
         """CSVに新しい記録を追加"""
+        # タイムスタンプ付きCSVに追加
         with open(self.csv_file_path, "a", newline="") as f:
             writer = csv.writer(f)
-            writer.writerow([date, contrail_count])
+            writer.writerow([date, contrail_count, image_path])
+        
+        # ベースCSVにも追加（参照用）
+        with open(self.base_csv_path, "a", newline="") as f:
+            writer = csv.writer(f)
+            writer.writerow([date, contrail_count, image_path])
+        
+        # 処理済みリストに追加
+        self.processed_images.add(image_path)
     
     def _add_white_circle_to_image(self, image_path, output_path):
         """画像の左下に白丸を追加して保存"""
@@ -85,21 +146,28 @@ class EnhancedAnalysisManager(AnalysisManager):
             print(f"画像のコピー中にエラーが発生しました: {e}")
     
     def process_images(self, additional_instructions=""):
-        """すべての画像を処理し、全ての結果をCSVに記録、全画像を保存"""
+        """すべての画像を処理し、全ての結果をCSVに記録、全画像を保存（重複回避）"""
         image_paths = self.find_images()
         
         if not image_paths:
             print("画像ファイルが見つかりませんでした。")
             return
         
-        print(f"{len(image_paths)}個の画像ファイルを処理します...\n")
+        # 未処理の画像のみをフィルタリング
+        unprocessed_images = [path for path in image_paths if path not in self.processed_images]
+        
+        if not unprocessed_images:
+            print("すべての画像がすでに処理済みです。")
+            return
+        
+        print(f"{len(unprocessed_images)}/{len(image_paths)}個の未処理画像を処理します...\n")
         
         # 結果をリセット
         self.results = []
         
         # 各画像を解析
-        for i, image_path in enumerate(image_paths, 1):
-            print(f"{i}/{len(image_paths)} を処理中... {image_path}")
+        for i, image_path in enumerate(unprocessed_images, 1):
+            print(f"{i}/{len(unprocessed_images)} を処理中... {image_path}")
             result = self.analyzer.analyze(image_path, additional_instructions=additional_instructions)
             self.results.append(result)
             
@@ -116,8 +184,8 @@ class EnhancedAnalysisManager(AnalysisManager):
                 
                 if date:
                     # CSVに追加（飛行機雲の有無に関わらず）
-                    self._add_to_csv(date, contrail_count)
-                    print(f"  -> 飛行機雲: {contrail_count}本, 日付: {date}")
+                    self._add_to_csv(date, contrail_count, image_path)
+                    print(f"  -> 飛行機雲: {contrail_count}本, 日付: {date}, 画像: {image_path}")
                     
                     # 出力ファイル名を設定
                     filename = os.path.basename(image_path)
@@ -178,13 +246,13 @@ def main():
     
     # 分析器と拡張マネージャーの初期化
     analyzer = QwenCloudAnalyzer(api_key=api_key,
-                                model="qwen2.5-vl-7b-instruct", 
-                                resize_dimensions=(640, 360))
+                               model="qwen2.5-vl-7b-instruct", 
+                               resize_dimensions=(640, 360))
     
     manager = EnhancedAnalysisManager(analyzer=analyzer,
-                                    input_dir=INPUT_DIR,
-                                    output_dir=OUTPUT_DIR,
-                                    output_img_dir=OUTPUT_IMG_DIR)
+                                   input_dir=INPUT_DIR,
+                                   output_dir=OUTPUT_DIR,
+                                   output_img_dir=OUTPUT_IMG_DIR)
     
     # 処理を実行
     result_file = manager.run()
@@ -195,6 +263,7 @@ def main():
     if result_file:
         print(f"\n結果は {result_file} に保存されました。")
         print(f"CSV記録は {manager.csv_file_path} に保存されました。")
+        print(f"ベースCSV記録は {manager.base_csv_path} に保存されました。")
         print(f"処理済み画像は {OUTPUT_IMG_DIR} に保存されました。")
 
 if __name__ == "__main__":

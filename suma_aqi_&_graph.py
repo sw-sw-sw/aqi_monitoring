@@ -49,15 +49,15 @@ def draw_graph():
     # all data graph
     all_data_result = create_aqi_visualization(csv_file_path, all_data_output_path, days=None)
     if all_data_result:
-        logger.info("すべての処理が完了しました")
+        logger.info("すべてのデータを使用したグラフの更新が完了しました")
     else:
-        logger.error("グラフの更新に失敗しました")     
+        logger.error("すべてのデータを使用したグラフの更新に失敗しました")     
     # latest N days graph
     recent_data_result = create_aqi_visualization(csv_file_path, recent_data_output_path, days=5)
     if recent_data_result:
-        logger.info("すべての処理が完了しました")
+        logger.info("最新5日間のデータを使用したグラフの更新が完了しました")
     else:
-        logger.error("グラフの更新に失敗しました")
+        logger.error("最新5日間のデータを使用したグラフの更新に失敗しました")
     
 if __name__ == "__main__":
     main()

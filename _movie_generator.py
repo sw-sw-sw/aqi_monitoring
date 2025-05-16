@@ -7,6 +7,13 @@ from datetime import datetime
 
 FPS = 60
 
+def set_FPS(fps):
+    """FPSを設定"""
+    global FPS
+    FPS = fps
+    print(f"FPSが {FPS} に設定されました", file=sys.stderr)
+    return FPS
+
 def format_timestamp(filename):
     """ファイル名からフォーマット済みのタイムスタンプを取得"""
     # ファイル名から拡張子を除去
@@ -29,19 +36,22 @@ def format_timestamp(filename):
 
 def extract_date_from_filename(filename):
     """ファイル名から日付オブジェクトを抽出"""
+    # ファイルパスからファイル名部分だけを取得
     basename = os.path.basename(filename)
+    # ファイル名から拡張子を取り除いた部分を取得
     name_without_ext = os.path.splitext(basename)[0]
     
-    # タイムスタンプが適切な形式かチェック (YYYYMMDDHHMMSSの14桁を想定)
+    # ファイル名が14桁の数字 (YYYYMMDDHHMMSS形式) であるかを確認
     if len(name_without_ext) == 14 and name_without_ext.isdigit():
+        # 年、月、日をそれぞれ整数として抽出
         year = int(name_without_ext[0:4])
         month = int(name_without_ext[4:6])
         day = int(name_without_ext[6:8])
         
-        # datetime オブジェクトを返す
+        # 年、月、日を使ってdatetimeオブジェクトを作成して返す
         return datetime(year, month, day)
     
-    # 形式が異なる場合は None を返す
+    # ファイル名が期待する形式でない場合は None を返す
     return None
 
 def add_timestamp_to_image(img, timestamp):
@@ -194,6 +204,6 @@ def generate_movie(input_dir, output_dir, output_file_name, days=None, time_stam
 if __name__ == "__main__":
 
     file_name = 'timelasp_movie_suma'
-    input_dir = os.path.join(IMAGE_CRAWLER_DIR, 'suma')
+    input_dir = os.path.join(IMAGE_ANALYSIS_DIR, 'suma/input_image')
     output_dir = MOVIE_DIR
-    generate_movie(input_dir, output_dir, file_name, 1)
+    generate_movie(input_dir, output_dir, file_name, 20)

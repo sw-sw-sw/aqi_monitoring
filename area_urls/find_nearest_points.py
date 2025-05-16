@@ -1,7 +1,7 @@
 import csv
 from geopy.distance import geodesic
 from config import *
-from google_geocording_module import geocode
+from area_urls._google_geocording_module import geocode
 from get_area_urls import get_area_links, get_pref_links, get_camera_links
 
 
