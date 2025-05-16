@@ -601,8 +601,6 @@ dateTime,regionCode,aqi_code,aqi_displayName,aqi_value,co_concentration,no_conce
 2025-04-27T23:00:00Z,jp,uaqi,Universal AQI,56,199.63,0.12,17.45,55.61,1,21.49
 2025-04-29T23:00:00Z,jp,uaqi,Universal AQI,59,298.63,0.16,18.66,32.05,0,29.7
 2025-04-29T22:00:00Z,jp,uaqi,Universal AQI,61,298.63,0.04,14.98,36.02,0,29.41
-2025-04-29T21:00:00Z,jp,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
-2025-04-29T20:00:00Z,jp,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A,N/A
 2025-04-29T19:00:00Z,jp,uaqi,Universal AQI,60,299.33,0,8.54,50.24,0.01,29.1
 2025-04-29T18:00:00Z,jp,uaqi,Universal AQI,56,217.49,0,7.82,55.23,0,30.87
 2025-04-29T17:00:00Z,jp,uaqi,Universal AQI,55,298.63,0,7.86,56.99,0.01,32.88
