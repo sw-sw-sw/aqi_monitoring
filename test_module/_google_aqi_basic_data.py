@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 API_KEY = os.getenv('GOOGLE_AQI_API_KEY')
 
-# 取得したい地点の緯度・経度（例：台湾・内埔）
+# 取得したい地点の緯度・経度（須磨）
 latlon = [34.644428177814845, 135.11131387124348]
 latitude = latlon[0]
 longitude = latlon[1]
