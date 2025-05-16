@@ -201,9 +201,63 @@ def generate_movie(input_dir, output_dir, output_file_name, days=None, time_stam
     print(f"[{time_with_minutes}] タイムスタンプ付き動画が生成されました: {output_path}")
     return output_path
 
+import subprocess
+
+def convert_to_webm(input_file, output_file=None):
+    """
+    MP4ファイルをWebMに変換する
+    input_file: 入力MP4ファイルのパス
+    output_file: 出力WebMファイルのパス (指定がなければ拡張子を.webmに置き換えたもの)
+    """
+    if output_file is None:
+        # 出力ファイル名を自動生成 (.mp4を.webmに置換)
+        output_file = input_file.replace('.mp4', '.webm')
+    
+    try:
+        # FFmpegコマンドを構築
+        cmd = [
+            'ffmpeg',
+            '-i', input_file,    # 入力ファイル
+            '-c:v', 'libvpx-vp9',  # VP9コーデック
+            '-b:v', '1M',        # ビットレート
+            '-crf', '30',        # 品質設定 (0-63、低いほど高品質)
+            '-deadline', 'good', # エンコード速度と品質のバランス
+            output_file          # 出力ファイル
+        ]
+        
+        print(f"FFmpegでWebM変換を開始します: {input_file} -> {output_file}", file=sys.stderr)
+        
+        # サブプロセスとしてFFmpeg実行
+        process = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        # 結果確認
+        if process.returncode == 0:
+            print(f"WebM変換が成功しました: {output_file}", file=sys.stderr)
+            return output_file
+        else:
+            print(f"WebM変換に失敗しました。エラー: {process.stderr}", file=sys.stderr)
+            return None
+            
+    except Exception as e:
+        print(f"変換処理中にエラーが発生しました: {e}", file=sys.stderr)
+        return None
+    
 if __name__ == "__main__":
 
     file_name = 'timelasp_movie_suma'
     input_dir = os.path.join(IMAGE_ANALYSIS_DIR, 'suma/input_image')
     output_dir = MOVIE_DIR
-    generate_movie(input_dir, output_dir, file_name, 20)
+    
+    # まずMP4で生成
+    mp4_output = generate_movie(input_dir, output_dir, file_name, 20)
+    
+    if mp4_output:
+        # MP4が生成できたらWebMに変換
+        webm_output = convert_to_webm(mp4_output)
+        if webm_output:
+            print(f"最終出力（WebM形式）: {webm_output}")
