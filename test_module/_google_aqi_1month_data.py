@@ -98,14 +98,14 @@ def exit_program(message=""):
     save_data()
     sys.exit(0)
 
-# 過去14日間の大気汚染データを取得する関数
+# 過去の大気汚染データを取得する関数
 def fetch_historical_aqi_data(period=14):
     global existing_data, new_data, existing_datetimes
     
     # 現在の時刻から48時間前を終了時刻とする（APIの制限に対応）
     current_time = datetime.now() - timedelta(hours=48)
-    # 過去14日前の時刻（変更）
-    start_time_base = current_time - timedelta(days=14)
+    # 過去の時刻（変更）
+    start_time_base = current_time - timedelta(days=period)
 
     print(f"Google AQI APIの制限により、過去{period}日間のデータを取得します。")
     print(f"取得期間: {start_time_base.strftime('%Y-%m-%d %H:%M')} から {current_time.strftime('%Y-%m-%d %H:%M')}")
@@ -137,11 +137,11 @@ def fetch_historical_aqi_data(period=14):
     
     # エラーカウンター（全体）
     total_error_count = 0
-    
-    print(f"過去14日間（{start_time_base.strftime('%Y-%m-%d %H:%M')}から{current_time.strftime('%Y-%m-%d %H:%M')}まで）の大気質データを取得中...")
-    
+
+    print(f"過去{period}日間（{start_time_base.strftime('%Y-%m-%d %H:%M')}から{current_time.strftime('%Y-%m-%d %H:%M')}まで）の大気質データを取得中...")
+
     # 1日ごとにデータを取得する
-    for day_offset in range(period):  # 14日分に変更
+    for day_offset in range(period):  
         # 各日の開始時刻と終了時刻を計算
         day_start = start_time_base + timedelta(days=day_offset)
         day_end = day_start + timedelta(days=1)
@@ -242,55 +242,31 @@ def fetch_historical_aqi_data(period=14):
                         break
                     
                     # APIレート制限を回避するために少し待機
-                    time.sleep(0.5)
+                    # time.sleep(0.5)
                 
                 else:
                     print(f"  エラーが発生しました。ステータスコード: {response.status_code}")
-                    print(f"  エラー詳細: {response.text}")
+                    print(f"  エラーが発生したため、次の日に進みます。")
+                    break
                     
-                    # エラーカウンターを増加
-                    retry_count += 1
-                    total_error_count += 1
-                    
-                    # エラーが3回連続で発生したら、次の日に進む
-                    if retry_count >= 3:
-                        print(f"  3回連続でエラーが発生したため、次の日に進みます。")
-                        break
-                    
-                    # 1分間待機してから再試行
-                    print("  3秒待機してから再試行します...")
-                    time.sleep(3)
-                    continue
                     
             except Exception as e:
                 print(f"  データ取得中にエラーが発生しました: {str(e)}")
                 
-                # エラーカウンターを増加
-                retry_count += 1
-                total_error_count += 1
-                
-                # エラーが3回連続で発生したら、次の日に進む
-                if retry_count >= 3:
-                    print(f"  3回連続でエラーが発生したため、次の日に進みます。")
-                    break
-                
-                # 1分間待機してから再試行
-                print("  1分間待機してから再試行します...")
-                time.sleep(60)
-                continue
+                break
         
         print(f"  {day_start.strftime('%Y-%m-%d')}のデータを{len(day_data)}時間分新たに取得しました。")
         
         # 日ごとのデータ取得間に少し待機（APIレート制限対策）
         if day_offset < 29:  # 最後の日でなければ待機
-            time.sleep(2)
+            time.sleep(0.1)
     
     # すべてのデータ取得が完了したら保存
     save_data()
 
 if __name__ == "__main__":
     try:
-        fetch_historical_aqi_data()
+        fetch_historical_aqi_data(30)
     except Exception as e:
         print(f"予期せぬエラーが発生しました: {str(e)}")
         save_data()  # エラー発生時も保存を試みる
