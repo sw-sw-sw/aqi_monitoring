@@ -14,7 +14,7 @@ __pycache__/
 
 # data/ディレクトリを無視するが、特定のファイルは追跡する
 data/*
-!data/kobe_aqi_data.csv
+!data/aqi_data.csv
 
 !data/o3_google_api_1month
 
