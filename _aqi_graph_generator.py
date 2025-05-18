@@ -4,7 +4,7 @@ from datetime import datetime
 import matplotlib.colors as mcolors
 import matplotlib.font_manager as fm
 import os
-from config import logger, DATA_DIR
+from config import *
 
 def setup_japanese_font():
     # 明示的にIPAexゴシックを指定
@@ -291,7 +291,7 @@ if __name__ == "__main__":
         tuple: (全期間グラフの生成結果, 最新N日分グラフの生成結果)
     """
     # CSVファイルのパス
-    csv_file_path = os.path.join(DATA_DIR, 'kobe_aqi_data.csv')
+    csv_file_path = CSV_FILE_PATH
     all_data_output_path = os.path.join(DATA_DIR, 'aqi_graph_all.png')
     recent_data_output_path = os.path.join(DATA_DIR, 'aqi_graph_recent.png')
     

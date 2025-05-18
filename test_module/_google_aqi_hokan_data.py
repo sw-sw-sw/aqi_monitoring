@@ -406,16 +406,19 @@ def print_data_summary(new_data, existing_data):
     except Exception as e:
         print(f"\n統計情報の計算中にエラーが発生しました: {str(e)}")
 
-def main():
-    """メイン処理"""
+if __name__ == "__main__":
+    """
+    メイン処理
+    指定された期間の大気質データを取得し、CSVファイルに保存する
+    """
     print(f"神戸の大気質データ取得を開始します...")
     
     # 時間範囲を指定
-    start_time = "2025-05-04 16:00:00"
+    start_time = "2025-05-06 16:00:00"
     end_time = "2025-05-07 06:00:00"
     
     # 指定された期間のデータを取得
     fetch_aqi_historical_data(start_time, end_time)
 
-if __name__ == "__main__":
-    main()
+
+    

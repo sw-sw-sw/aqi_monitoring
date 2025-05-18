@@ -4,7 +4,7 @@ import traceback
 from datetime import datetime
 from _aqi_graph_generator import create_aqi_visualization
 from config import *
-import _aqi_scraper_kobe 
+import _aqi_deta_getter_waqi 
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -33,7 +33,7 @@ def main():
 def get_aqi_data():
     # AQIデータの取得
     logger.info("AQIデータを取得しています...")
-    data = _aqi_scraper_kobe.fetch_aqi_data()
+    data = _aqi_deta_getter_waqi.fetch_aqi_data()
     
     if not data:
         logger.error("データを取得できませんでした")
