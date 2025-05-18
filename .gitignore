@@ -21,3 +21,5 @@ data/*
 google_aqi_api_test.html
 
 **/CLAUDE.local.md
+
+data/aqi_data.csv
