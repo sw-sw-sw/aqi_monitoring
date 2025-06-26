@@ -42,7 +42,7 @@ def get_aqi_data():
 def draw_graph():
     # グラフの更新
     logger.info("グラフを更新しています...")
-    csv_file_path = os.path.join(DATA_DIR, 'kobe_aqi_data.csv')
+    csv_file_path = os.path.join(DATA_DIR, 'aqi_data.csv')
     all_data_output_path = os.path.join(DATA_DIR, 'aqi_graph_all.png')
     recent_data_output_path = os.path.join(DATA_DIR, 'aqi_graph_recent.png')
     
