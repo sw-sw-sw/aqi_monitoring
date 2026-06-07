@@ -43,17 +43,22 @@ def draw_graph():
     # グラフの更新
     logger.info("グラフを更新しています...")
     csv_file_path = os.path.join(DATA_DIR, 'aqi_data.csv')
-    all_data_output_path = os.path.join(DATA_DIR, 'aqi_graph_all.png')
-    recent_data_output_path = os.path.join(DATA_DIR, 'aqi_graph_recent.png')
+    
+    # 90 days 
+    days = 120
+    data_output_path = os.path.join(DATA_DIR, f'aqi_graph_{days}.png')
     
     # all data graph
-    all_data_result = create_aqi_visualization(csv_file_path, all_data_output_path, days=None)
+    all_data_result = create_aqi_visualization(csv_file_path, data_output_path, days=days)
     if all_data_result:
         logger.info("すべてのデータを使用したグラフの更新が完了しました")
     else:
         logger.error("すべてのデータを使用したグラフの更新に失敗しました")     
-    # latest N days graph
-    recent_data_result = create_aqi_visualization(csv_file_path, recent_data_output_path, days=5)
+
+    # 7 days 
+    days = 14
+    data_output_path = os.path.join(DATA_DIR, f'aqi_graph_{days}.png')
+    recent_data_result = create_aqi_visualization(csv_file_path, data_output_path, days=days)
     if recent_data_result:
         logger.info("最新5日間のデータを使用したグラフの更新が完了しました")
     else:
